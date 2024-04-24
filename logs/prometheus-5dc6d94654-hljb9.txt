@@ -1,0 +1,51 @@
+ts=2024-04-24T12:44:59.580Z caller=main.go:491 level=info msg="No time or size retention was set so using the default time retention" duration=15d
+ts=2024-04-24T12:44:59.580Z caller=main.go:535 level=info msg="Starting Prometheus Server" mode=server version="(version=2.37.1, branch=HEAD, revision=1ce2197e7f9e95089bfb95cb61762b5a89a8c0da)"
+ts=2024-04-24T12:44:59.580Z caller=main.go:540 level=info build_context="(go=go1.18.6, user=root@3caaaea7ba87, date=20220912-12:42:39)"
+ts=2024-04-24T12:44:59.580Z caller=main.go:541 level=info host_details="(Linux 6.5.5-200.fc38.x86_64 #1 SMP PREEMPT_DYNAMIC Sun Sep 24 15:52:44 UTC 2023 x86_64 prometheus-5dc6d94654-hljb9 (none))"
+ts=2024-04-24T12:44:59.580Z caller=main.go:542 level=info fd_limits="(soft=1048576, hard=1048576)"
+ts=2024-04-24T12:44:59.580Z caller=main.go:543 level=info vm_limits="(soft=unlimited, hard=unlimited)"
+ts=2024-04-24T12:44:59.629Z caller=web.go:553 level=info component=web msg="Start listening for connections" address=0.0.0.0:9090
+ts=2024-04-24T12:44:59.630Z caller=main.go:972 level=info msg="Starting TSDB ..."
+ts=2024-04-24T12:44:59.633Z caller=tls_config.go:231 level=info component=web msg="TLS is disabled." http2=false
+ts=2024-04-24T12:44:59.663Z caller=repair.go:56 level=info component=tsdb msg="Found healthy block" mint=1713291707360 maxt=1713312000000 ulid=01HVN6T856HRCS4368D0PBM2KH
+ts=2024-04-24T12:44:59.703Z caller=repair.go:56 level=info component=tsdb msg="Found healthy block" mint=1713312002360 maxt=1713376800000 ulid=01HVQ4KPM1SMYFHRGKBBFP55MJ
+ts=2024-04-24T12:44:59.717Z caller=repair.go:56 level=info component=tsdb msg="Found healthy block" mint=1713376800849 maxt=1713441600000 ulid=01HVS2DDYW9JM6JC7W6GTVWMAP
+ts=2024-04-24T12:44:59.720Z caller=repair.go:56 level=info component=tsdb msg="Found healthy block" mint=1713441600940 maxt=1713506400000 ulid=01HVV06Z6PQDZ2EQRDWYVV54A5
+ts=2024-04-24T12:44:59.763Z caller=repair.go:56 level=info component=tsdb msg="Found healthy block" mint=1713506402360 maxt=1713564000000 ulid=01HW3JW1CF4WTBPSR3NAQEBYZW
+ts=2024-04-24T12:44:59.777Z caller=repair.go:56 level=info component=tsdb msg="Found healthy block" mint=1713794667360 maxt=1713830400000 ulid=01HW5GMTAQJGEBYQP7DWHKZEC9
+ts=2024-04-24T12:44:59.791Z caller=repair.go:56 level=info component=tsdb msg="Found healthy block" mint=1713895202360 maxt=1713902400000 ulid=01HW6C4C3BQ6107CAPXP6K059J
+ts=2024-04-24T12:44:59.792Z caller=repair.go:56 level=info component=tsdb msg="Found healthy block" mint=1713830400000 maxt=1713895200000 ulid=01HW6C4C6DVPZ891SC5SQY2QKV
+ts=2024-04-24T12:44:59.794Z caller=repair.go:56 level=info component=tsdb msg="Found healthy block" mint=1713902402360 maxt=1713909600000 ulid=01HW6K06J236278HKBFJMWTVT3
+ts=2024-04-24T12:44:59.795Z caller=repair.go:56 level=info component=tsdb msg="Found healthy block" mint=1713909602360 maxt=1713916800000 ulid=01HW6SVXT21ZSTJXVT2NBQ561D
+ts=2024-04-24T12:44:59.821Z caller=dir_locker.go:77 level=warn component=tsdb msg="A lockfile from a previous execution already existed. It was replaced" file=/data/lock
+ts=2024-04-24T12:45:00.083Z caller=head.go:493 level=info component=tsdb msg="Replaying on-disk memory mappable chunks if any"
+ts=2024-04-24T12:45:00.083Z caller=head.go:536 level=info component=tsdb msg="On-disk memory mappable chunks replay completed" duration=170.824µs
+ts=2024-04-24T12:45:00.083Z caller=head.go:542 level=info component=tsdb msg="Replaying WAL, this may take a while"
+ts=2024-04-24T12:45:00.096Z caller=head.go:578 level=info component=tsdb msg="WAL checkpoint loaded"
+ts=2024-04-24T12:45:00.129Z caller=head.go:613 level=info component=tsdb msg="WAL segment loaded" segment=52 maxSegment=56
+ts=2024-04-24T12:45:00.148Z caller=head.go:613 level=info component=tsdb msg="WAL segment loaded" segment=53 maxSegment=56
+ts=2024-04-24T12:45:00.168Z caller=head.go:613 level=info component=tsdb msg="WAL segment loaded" segment=54 maxSegment=56
+ts=2024-04-24T12:45:00.248Z caller=head.go:613 level=info component=tsdb msg="WAL segment loaded" segment=55 maxSegment=56
+ts=2024-04-24T12:45:00.248Z caller=head.go:613 level=info component=tsdb msg="WAL segment loaded" segment=56 maxSegment=56
+ts=2024-04-24T12:45:00.248Z caller=head.go:619 level=info component=tsdb msg="WAL replay completed" checkpoint_replay_duration=13.268257ms wal_replay_duration=151.496509ms total_replay_duration=165.470944ms
+ts=2024-04-24T12:45:00.251Z caller=main.go:993 level=info fs_type=EXT4_SUPER_MAGIC
+ts=2024-04-24T12:45:00.251Z caller=main.go:996 level=info msg="TSDB started"
+ts=2024-04-24T12:45:00.251Z caller=main.go:1177 level=info msg="Loading configuration file" filename=/prometheus/config/scrape/prometheus.yml
+ts=2024-04-24T12:45:00.252Z caller=kubernetes.go:326 level=info component="discovery manager scrape" discovery=kubernetes msg="Using pod service account via in-cluster config"
+ts=2024-04-24T12:45:00.253Z caller=kubernetes.go:326 level=info component="discovery manager scrape" discovery=kubernetes msg="Using pod service account via in-cluster config"
+ts=2024-04-24T12:45:00.254Z caller=kubernetes.go:326 level=info component="discovery manager scrape" discovery=kubernetes msg="Using pod service account via in-cluster config"
+ts=2024-04-24T12:45:00.254Z caller=main.go:1214 level=info msg="Completed loading of configuration file" filename=/prometheus/config/scrape/prometheus.yml totalDuration=3.40638ms db_storage=1.063µs remote_storage=2.013µs web_handler=586ns query_engine=1.265µs scrape=893.856µs scrape_sd=1.961278ms notify=1.872µs notify_sd=3.541µs rules=2.274µs tracing=7.357µs
+ts=2024-04-24T12:45:00.255Z caller=main.go:957 level=info msg="Server is ready to receive web requests."
+ts=2024-04-24T12:45:00.255Z caller=manager.go:941 level=info component="rule manager" msg="Starting rule manager..."
+ts=2024-04-24T12:45:07.480Z caller=compact.go:519 level=info component=tsdb msg="write block" mint=1713916800000 maxt=1713924000000 ulid=01HW826TD6NXDDA0Q9338GYGYJ duration=113.828018ms
+ts=2024-04-24T12:45:07.482Z caller=head.go:842 level=info component=tsdb msg="Head GC completed" duration=830.004µs
+ts=2024-04-24T12:45:07.555Z caller=compact.go:519 level=info component=tsdb msg="write block" mint=1713924002360 maxt=1713931200000 ulid=01HW826TGTTK9BKR1PWFRTK1KE duration=72.893439ms
+ts=2024-04-24T12:45:07.557Z caller=head.go:842 level=info component=tsdb msg="Head GC completed" duration=1.13487ms
+ts=2024-04-24T12:45:07.558Z caller=checkpoint.go:97 level=info component=tsdb msg="Creating checkpoint" from_segment=52 to_segment=54 mint=1713931200000
+ts=2024-04-24T12:45:07.581Z caller=head.go:1011 level=info component=tsdb msg="WAL checkpoint complete" first=52 last=54 duration=24.527906ms
+ts=2024-04-24T12:45:07.669Z caller=compact.go:460 level=info component=tsdb msg="compact blocks" count=3 mint=1713895202360 maxt=1713916800000 ulid=01HW826TKYB7A9MKKCJ3SQS4JF sources="[01HW6C4C3BQ6107CAPXP6K059J 01HW6K06J236278HKBFJMWTVT3 01HW6SVXT21ZSTJXVT2NBQ561D]" duration=87.021426ms
+ts=2024-04-24T12:45:07.673Z caller=db.go:1294 level=info component=tsdb msg="Deleting obsolete block" block=01HW6K06J236278HKBFJMWTVT3
+ts=2024-04-24T12:45:07.688Z caller=db.go:1294 level=info component=tsdb msg="Deleting obsolete block" block=01HW6C4C3BQ6107CAPXP6K059J
+ts=2024-04-24T12:45:07.692Z caller=db.go:1294 level=info component=tsdb msg="Deleting obsolete block" block=01HW6SVXT21ZSTJXVT2NBQ561D
+ts=2024-04-24T14:45:12.386Z caller=compact.go:510 level=info component=tsdb msg="write block resulted in empty block" mint=1713959107360 maxt=1713960000000 duration=23.585865ms
+ts=2024-04-24T14:45:12.387Z caller=head.go:842 level=info component=tsdb msg="Head GC completed" duration=794.122µs

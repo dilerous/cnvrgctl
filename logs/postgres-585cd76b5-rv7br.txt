@@ -1,0 +1,32 @@
+pg_ctl: another server might be running; trying to start server anyway
+waiting for server to start....2024-04-24 12:44:57.965 UTC [25] LOG:  starting PostgreSQL 12.5 on x86_64-redhat-linux-gnu, compiled by gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-44), 64-bit
+2024-04-24 12:44:57.966 UTC [25] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2024-04-24 12:44:57.991 UTC [25] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2024-04-24 12:44:58.028 UTC [25] LOG:  redirecting log output to logging collector process
+2024-04-24 12:44:58.028 UTC [25] HINT:  Future log output will appear in directory "log".
+ done
+server started
+/var/run/postgresql:5432 - accepting connections
+=> sourcing /opt/app-root/src/postgresql-start/cnvrg_init.sh ...
+############## staring cnvrg DB init ##############
+ALTER ROLE
+                                   List of roles
+ Role name |                         Attributes                         | Member of 
+-----------+------------------------------------------------------------+-----------
+ cnvrg     | Superuser                                                  | {}
+ postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
+
+############## cnvrg DB init is done ##############
+=> sourcing /usr/share/container-scripts/postgresql/start/set_passwords.sh ...
+ALTER ROLE
+ALTER ROLE
+waiting for server to shut down.... done
+server stopped
+Starting server...
+2024-04-24 12:44:58.717 UTC [1] LOG:  starting PostgreSQL 12.5 on x86_64-redhat-linux-gnu, compiled by gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-44), 64-bit
+2024-04-24 12:44:58.718 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+2024-04-24 12:44:58.718 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+2024-04-24 12:44:58.720 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2024-04-24 12:44:58.721 UTC [1] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2024-04-24 12:44:58.753 UTC [1] LOG:  redirecting log output to logging collector process
+2024-04-24 12:44:58.753 UTC [1] HINT:  Future log output will appear in directory "log".

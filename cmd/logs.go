@@ -6,6 +6,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -108,12 +109,47 @@ func homeDir() string {
 
 func getLogs(pods []corev1.Pod) {
 	fmt.Println("Pod Logs:")
+
+	logsPath := "./logs"
+	err := os.MkdirAll(logsPath, 0755)
+	if err != nil {
+		fmt.Println("error creating folder:", err)
+		return
+	}
+
+	err = os.Chdir(logsPath)
+	if err != nil {
+		fmt.Println("error changing directory:", err)
+		return
+	}
+
 	for _, pod := range pods {
 		podLogs, err := clientset.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, &corev1.PodLogOptions{}).DoRaw(context.Background())
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error getting logs for pod %s: %v\n", pod.Name, err)
+			fmt.Fprintf(os.Stderr, "error getting logs for pod %s: %v\n", pod.Name, err)
 			continue
 		}
+
+		file, err := os.Create(pod.Name + ".txt")
+		if err != nil {
+			log.Fatalf("error creating file: %v", err)
+		}
+		defer file.Close()
+
 		fmt.Printf("Pod: %s\n%s\n", pod.Name, string(podLogs))
+		fmt.Fprint(file, string(podLogs))
+		file.Close()
 	}
 }
+
+/*
+func createLogs(pods []corev1.Pod) {
+	fmt.Println("Capturing logs in a text file:")
+	for _, pod := range pods {
+		file, err := os.Create(pod.Name + ".txt")
+		if err != nil {
+			log.Fatalf("Error creating file: %v", err)
+		}
+	}
+	defer file.Close()
+}*/

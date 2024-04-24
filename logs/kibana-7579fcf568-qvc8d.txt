@@ -1,0 +1,287 @@
+[Wed Apr 24 12:43:08 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:09 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:10 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:11 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:12 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:13 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:43:14Z","tags":["warning","plugins-discovery"],"pid":1,"message":"Expect plugin \"id\" in camelCase, but found: apm_oss"}
+[Wed Apr 24 12:43:14 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:15 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:16 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:43:17Z","tags":["info","plugins-service"],"pid":1,"message":"Plugin \"visTypeXy\" is disabled."}
+[Wed Apr 24 12:43:17 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:43:18Z","tags":["info","plugins-system"],"pid":1,"message":"Setting up [42] plugins: [usageCollection,telemetryCollectionManager,telemetry,kibanaLegacy,devTools,uiActions,share,statusPage,newsfeed,indexPatternManagement,mapsLegacy,kibanaReact,kibanaUtils,esUiShared,inspector,embeddable,bfetch,expressions,data,home,console,apm_oss,management,advancedSettings,telemetryManagementSection,visualizations,inputControlVis,visTypeVega,visTypeTable,visTypeTimelion,visTypeMarkdown,savedObjects,navigation,visualize,dashboard,discover,savedObjectsManagement,charts,visTypeTimeseries,visTypeMetric,visTypeVislib,visTypeTagcloud]"}
+{"type":"log","@timestamp":"2024-04-24T12:43:18Z","tags":["info","savedobjects-service"],"pid":1,"message":"Waiting until all Elasticsearch nodes are compatible with Kibana before starting saved objects migrations..."}
+{"type":"log","@timestamp":"2024-04-24T12:43:18Z","tags":["error","elasticsearch","admin"],"pid":1,"message":"Request error, retrying\nGET http://elasticsearch.cnvrg.svc:9200/_nodes?filter_path=nodes.*.version%2Cnodes.*.http.publish_address%2Cnodes.*.ip => connect ECONNREFUSED 172.30.128.228:9200"}
+{"type":"log","@timestamp":"2024-04-24T12:43:18Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:43:18Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+{"type":"log","@timestamp":"2024-04-24T12:43:18Z","tags":["error","savedobjects-service"],"pid":1,"message":"Unable to retrieve version information from Elasticsearch nodes."}
+[Wed Apr 24 12:43:18 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:19 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:20 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:43:21Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:43:21Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:43:22 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:23 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:43:23Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:43:23Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:43:24 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:25 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:43:26Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:43:26Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:43:26 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:27 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:28 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:43:28Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:43:28Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:43:29 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:30 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:43:31Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:43:31Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:43:31 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:32 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:33 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:43:33Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:43:33Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:43:34 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:35 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:43:36Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:43:36Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:43:36 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:37 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:38 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:43:38Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:43:38Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:43:39 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:40 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:43:41Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:43:41Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:43:41 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:42 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:43 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:43:43Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:43:43Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:43:44 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:45 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:43:46Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:43:46Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:43:46 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:47 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:48 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:43:48Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:43:48Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:43:49 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:50 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:43:51Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:43:51Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:43:51 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:52 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:43:53Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:43:53Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:43:53 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:54 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:55 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:43:56Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:43:56Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:43:56 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:57 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:43:58Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:43:58Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:43:58 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:43:59 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:00 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:01Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:01Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:01 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:02 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:03Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:03Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:03 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:04 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:05 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:06Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:06Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:06 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:07 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:08Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:08Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:08 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:09 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:10 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:11Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:11Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:11 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:12 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:13Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:13Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:13 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:14 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:15 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:16Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:16Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:16 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:17 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:18Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:18Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:18 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:19 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:20 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:21Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:21Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:21 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:23 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:23Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:23Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:24 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:25 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:26 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:26Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:26Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:27 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:28 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:28Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:28Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:29 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:30 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:31Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:31Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:31 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:32 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:33 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:33Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:33Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:34 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:35 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:36Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:36Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:36 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:37 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:38 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:38Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:38Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:39 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:40 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:41Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:41Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:41 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:42 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:43 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:43Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:43Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:44 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:45 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:46Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:46Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:46 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:47 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:48 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:48Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:48Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:49 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:50 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:51Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:51Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:51 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:52 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:53 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:53Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:53Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:54 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:55 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:56Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:56Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:56 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:57 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:44:58 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:44:58Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:44:58Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:44:59 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:00 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:45:01Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:45:01Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:45:01 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:02 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:45:03Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:45:03Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:45:03 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:04 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:05 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:45:06Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:45:06Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:45:06 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:07 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:45:08Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:45:08Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:45:08 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:09 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:10 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:45:11Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:45:11Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:45:11 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:12 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:45:13Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:45:13Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:45:13 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:14 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:15 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:45:16Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:45:16Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:45:16 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:17 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:45:18Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:45:18Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:45:18 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:19 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:20 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:45:21Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:45:21Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:45:21 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:22 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:45:23Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:45:23Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:45:23 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:24 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:25 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:45:26Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:45:26Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:45:26 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:27 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:45:28Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:45:28Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:45:28 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:29 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:30 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:45:31Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:45:31Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:45:32 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:33 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:45:33Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:45:33Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:45:34 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:35 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:36 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:45:36Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"Unable to revive connection: http://elasticsearch.cnvrg.svc:9200/"}
+{"type":"log","@timestamp":"2024-04-24T12:45:36Z","tags":["warning","elasticsearch","admin"],"pid":1,"message":"No living connections"}
+[Wed Apr 24 12:45:37 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:38 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:45:38Z","tags":["info","savedobjects-service"],"pid":1,"message":"Starting saved objects migrations"}
+{"type":"log","@timestamp":"2024-04-24T12:45:38Z","tags":["info","plugins-system"],"pid":1,"message":"Starting [27] plugins: [usageCollection,telemetryCollectionManager,telemetry,kibanaLegacy,share,bfetch,expressions,data,home,console,apm_oss,management,advancedSettings,visualizations,inputControlVis,visTypeVega,visTypeTable,visTypeTimelion,visTypeMarkdown,visualize,dashboard,discover,savedObjectsManagement,visTypeTimeseries,visTypeMetric,visTypeVislib,visTypeTagcloud]"}
+[Wed Apr 24 12:45:41 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:42 UTC 2024][cnvrg-init] kibana not ready yet.. 
+{"type":"log","@timestamp":"2024-04-24T12:45:42Z","tags":["status","plugin:console_legacy@7.8.1","info"],"pid":1,"state":"green","message":"Status changed from uninitialized to green - Ready","prevState":"uninitialized","prevMsg":"uninitialized"}
+{"type":"log","@timestamp":"2024-04-24T12:45:42Z","tags":["status","plugin:kibana@7.8.1","info"],"pid":1,"state":"green","message":"Status changed from uninitialized to green - Ready","prevState":"uninitialized","prevMsg":"uninitialized"}
+{"type":"log","@timestamp":"2024-04-24T12:45:42Z","tags":["status","plugin:elasticsearch@7.8.1","info"],"pid":1,"state":"yellow","message":"Status changed from uninitialized to yellow - Waiting for Elasticsearch","prevState":"uninitialized","prevMsg":"uninitialized"}
+{"type":"log","@timestamp":"2024-04-24T12:45:42Z","tags":["warning"],"pid":1,"kibanaVersion":"7.8.1","nodes":[{"ip":"10.130.0.56","version":"7.17.5","http":{"publish_address":"10.130.0.56:9200"},"name":"v7.17.5 @ 10.130.0.56:9200 (10.130.0.56)"}],"message":"You're running Kibana 7.8.1 with some different versions of Elasticsearch. Update Kibana or Elasticsearch to the same version to prevent compatibility issues: v7.17.5 @ 10.130.0.56:9200 (10.130.0.56)"}
+{"type":"log","@timestamp":"2024-04-24T12:45:42Z","tags":["status","plugin:elasticsearch@7.8.1","info"],"pid":1,"state":"green","message":"Status changed from yellow to green - Ready","prevState":"yellow","prevMsg":"Waiting for Elasticsearch"}
+{"type":"log","@timestamp":"2024-04-24T12:45:42Z","tags":["status","plugin:region_map@7.8.1","info"],"pid":1,"state":"green","message":"Status changed from uninitialized to green - Ready","prevState":"uninitialized","prevMsg":"uninitialized"}
+{"type":"log","@timestamp":"2024-04-24T12:45:42Z","tags":["status","plugin:ui_metric@7.8.1","info"],"pid":1,"state":"green","message":"Status changed from uninitialized to green - Ready","prevState":"uninitialized","prevMsg":"uninitialized"}
+{"type":"log","@timestamp":"2024-04-24T12:45:42Z","tags":["status","plugin:apm_oss@7.8.1","info"],"pid":1,"state":"green","message":"Status changed from uninitialized to green - Ready","prevState":"uninitialized","prevMsg":"uninitialized"}
+{"type":"log","@timestamp":"2024-04-24T12:45:42Z","tags":["listening","info"],"pid":1,"message":"Server running at http://0.0.0.0:8080"}
+{"type":"log","@timestamp":"2024-04-24T12:45:42Z","tags":["info","http","server","Kibana"],"pid":1,"message":"http server running at http://0.0.0.0:8080"}
+{"type":"response","@timestamp":"2024-04-24T12:45:43Z","tags":["api"],"pid":1,"method":"get","statusCode":200,"req":{"url":"/api/status","method":"get","headers":{"user-agent":"curl/7.29.0","host":"localhost:8080","accept":"*/*"},"remoteAddress":"127.0.0.1","userAgent":"127.0.0.1"},"res":{"statusCode":200,"responseTime":7,"contentLength":9},"message":"GET /api/status 200 7ms - 9.0B"}
+[Wed Apr 24 12:45:43 UTC 2024][cnvrg-init] kibana not ready yet.. 
+[Wed Apr 24 12:45:44 UTC 2024][cnvrg-init] kibana is ready!
+{"type":"response","@timestamp":"2024-04-24T12:45:44Z","tags":[],"pid":1,"method":"get","statusCode":200,"req":{"url":"/api/saved_objects/index-pattern/cnvrg*","method":"get","headers":{"user-agent":"curl/7.29.0","host":"localhost:8080","accept":"*/*"},"remoteAddress":"127.0.0.1","userAgent":"127.0.0.1"},"res":{"statusCode":200,"responseTime":15,"contentLength":9},"message":"GET /api/saved_objects/index-pattern/cnvrg* 200 15ms - 9.0B"}
+[Wed Apr 24 12:45:44 UTC 2024][cnvrg-init] cnvrg index pattern found, skip index creation!
+{"type":"response","@timestamp":"2024-04-24T12:45:44Z","tags":[],"pid":1,"method":"get","statusCode":200,"req":{"url":"/api/saved_objects/index-pattern/cnvrg-endpoints*","method":"get","headers":{"user-agent":"curl/7.29.0","host":"localhost:8080","accept":"*/*"},"remoteAddress":"127.0.0.1","userAgent":"127.0.0.1"},"res":{"statusCode":200,"responseTime":9,"contentLength":9},"message":"GET /api/saved_objects/index-pattern/cnvrg-endpoints* 200 9ms - 9.0B"}
+[Wed Apr 24 12:45:44 UTC 2024][cnvrg-init] cnvrg index pattern found, skip index creation!

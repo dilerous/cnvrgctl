@@ -1,0 +1,39 @@
+logger=settings t=2024-04-24T12:42:58.6133873Z level=info msg="Starting Grafana" version=9.1.7 commit=0cbb79298d branch=HEAD compiled=2022-10-04T09:27:05Z
+logger=settings t=2024-04-24T12:42:58.616496144Z level=info msg="Config loaded from" file=/usr/share/grafana/conf/defaults.ini
+logger=settings t=2024-04-24T12:42:58.616608962Z level=info msg="Config loaded from" file=/etc/grafana/grafana.ini
+logger=settings t=2024-04-24T12:42:58.616640914Z level=info msg="Config overridden from command line" arg="default.paths.data=/var/lib/grafana"
+logger=settings t=2024-04-24T12:42:58.616670572Z level=info msg="Config overridden from command line" arg="default.paths.logs=/var/log/grafana"
+logger=settings t=2024-04-24T12:42:58.616690658Z level=info msg="Config overridden from command line" arg="default.paths.plugins=/var/lib/grafana/plugins"
+logger=settings t=2024-04-24T12:42:58.616711018Z level=info msg="Config overridden from command line" arg="default.paths.provisioning=/etc/grafana/provisioning"
+logger=settings t=2024-04-24T12:42:58.616730674Z level=info msg="Config overridden from command line" arg="default.log.mode=console"
+logger=settings t=2024-04-24T12:42:58.616751819Z level=info msg="Config overridden from Environment variable" var="GF_PATHS_DATA=/var/lib/grafana"
+logger=settings t=2024-04-24T12:42:58.616771788Z level=info msg="Config overridden from Environment variable" var="GF_PATHS_LOGS=/var/log/grafana"
+logger=settings t=2024-04-24T12:42:58.616801424Z level=info msg="Config overridden from Environment variable" var="GF_PATHS_PLUGINS=/var/lib/grafana/plugins"
+logger=settings t=2024-04-24T12:42:58.616822447Z level=info msg="Config overridden from Environment variable" var="GF_PATHS_PROVISIONING=/etc/grafana/provisioning"
+logger=settings t=2024-04-24T12:42:58.616841905Z level=info msg="Config overridden from Environment variable" var="GF_SERVER_HTTP_ADDR=0.0.0.0"
+logger=settings t=2024-04-24T12:42:58.616861303Z level=info msg="Config overridden from Environment variable" var="GF_SERVER_HTTP_PORT=8080"
+logger=settings t=2024-04-24T12:42:58.616879509Z level=info msg="Config overridden from Environment variable" var="GF_SECURITY_ALLOW_EMBEDDING=true"
+logger=settings t=2024-04-24T12:42:58.616898215Z level=info msg="Config overridden from Environment variable" var="GF_AUTH_ANONYMOUS_ENABLED=true"
+logger=settings t=2024-04-24T12:42:58.616918111Z level=info msg="Config overridden from Environment variable" var="GF_AUTH_ANONYMOUS_ORG_ROLE=Admin"
+logger=settings t=2024-04-24T12:42:58.616937175Z level=info msg="Config overridden from Environment variable" var="GF_AUTH_BASIC_ENABLED=false"
+logger=settings t=2024-04-24T12:42:58.616963116Z level=info msg="Path Home" path=/usr/share/grafana
+logger=settings t=2024-04-24T12:42:58.61698463Z level=info msg="Path Data" path=/var/lib/grafana
+logger=settings t=2024-04-24T12:42:58.617004253Z level=info msg="Path Logs" path=/var/log/grafana
+logger=settings t=2024-04-24T12:42:58.617022099Z level=info msg="Path Plugins" path=/var/lib/grafana/plugins
+logger=settings t=2024-04-24T12:42:58.617040979Z level=info msg="Path Provisioning" path=/etc/grafana/provisioning
+logger=settings t=2024-04-24T12:42:58.617076888Z level=info msg="App mode production"
+logger=sqlstore t=2024-04-24T12:42:58.620258302Z level=info msg="Connecting to DB" dbtype=sqlite3
+logger=migrator t=2024-04-24T12:42:58.783598619Z level=info msg="Starting DB migrations"
+logger=migrator t=2024-04-24T12:42:58.788911881Z level=info msg="migrations completed" performed=0 skipped=447 duration=663.063µs
+logger=plugin.manager t=2024-04-24T12:42:59.285130352Z level=info msg="Plugin registered" pluginId=input
+logger=secrets t=2024-04-24T12:42:59.285734601Z level=info msg="Envelope encryption state" enabled=true currentprovider=secretKey.v1
+logger=query_data t=2024-04-24T12:42:59.301281025Z level=info msg="Query Service initialization"
+logger=live.push_http t=2024-04-24T12:42:59.362146768Z level=info msg="Live Push Gateway initialization"
+logger=ticker t=2024-04-24T12:42:59.467712144Z level=info msg=starting first_tick=2024-04-24T12:43:00Z
+logger=infra.usagestats.collector t=2024-04-24T12:42:59.887518115Z level=info msg="registering usage stat providers" usageStatsProvidersLen=2
+logger=provisioning.alerting t=2024-04-24T12:43:00.088419214Z level=info msg="starting to provision alerting"
+logger=provisioning.alerting t=2024-04-24T12:43:00.088455429Z level=info msg="finished to provision alerting"
+logger=ngalert t=2024-04-24T12:43:00.089788306Z level=info msg="warming cache for startup"
+logger=ngalert.multiorg.alertmanager t=2024-04-24T12:43:00.092414552Z level=info msg="starting MultiOrg Alertmanager"
+logger=grafanaStorageLogger t=2024-04-24T12:43:00.099037365Z level=info msg="storage starting"
+logger=http.server t=2024-04-24T12:43:00.260698512Z level=info msg="HTTP Server Listen" address=[::]:8080 protocol=http subUrl= socket=
