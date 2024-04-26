@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
@@ -23,7 +24,7 @@ var clientset *kubernetes.Clientset
 // logsCmd represents the logs command
 var logsCmd = &cobra.Command{
 	Use:   "logs",
-	Short: "A brief description of your command",
+	Short: "The command will grab logs from all running pods in the namespace defined",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
@@ -32,27 +33,31 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("logs called")
+
+		// testing how to add a flag
+		tarFlag, _ := cmd.Flags().GetBool("tar")
+		fmt.Println(tarFlag)
+		if tarFlag {
+			createTar()
+		}
+
+		// calls connect function to set the clientset for kubectl access
 		connectToK8s()
-		podList := getPods("cnvrg")
+
+		// return a list all pods in the cnvrg namespace
+		// TODO: add a flag to select the namespace
+		podList, _ := getPods("cnvrg")
+
+		// takes the podlist and gathers logs for each pod and saves to txt file
 		getLogs(podList)
-		//		for _, pod := range podList {
-		//			fmt.Println(pod.Name)
-		//		}
 	},
 }
 
 func init() {
+	// Adds the log command to the cli tool
 	rootCmd.AddCommand(logsCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// logsCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// logsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// Adds the flag -t --tar to the logs command this is local
+	logsCmd.Flags().BoolP("tar", "t", false, "tarball the log files")
 }
 
 func connectToK8s() {
@@ -81,23 +86,6 @@ func connectToK8s() {
 		fmt.Fprintf(os.Stderr, "error creating kubernetes client: %v\n", err)
 		os.Exit(1)
 	}
-
-}
-
-func getPods(ns string) []corev1.Pod {
-	// List Pods
-	pods, err := clientset.CoreV1().Pods(ns).List(context.Background(), v1.ListOptions{})
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error listing pods: %v\n", err)
-		os.Exit(1)
-	}
-
-	// Print and return the pod name and namespace
-	fmt.Println("Pods:")
-	for _, pod := range pods.Items {
-		fmt.Printf("Namespace: %s, Name: %s\n", pod.Namespace, pod.Name)
-	}
-	return pods.Items
 }
 
 func homeDir() string {
@@ -107,8 +95,26 @@ func homeDir() string {
 	return os.Getenv("USERPROFILE") // Windows
 }
 
+func getPods(ns string) ([]corev1.Pod, error) {
+	// List Pods
+	pods, err := clientset.CoreV1().Pods(ns).List(context.Background(), v1.ListOptions{})
+	if err != nil {
+		//		fmt.Fprintf(os.Stderr, "error listing pods: %v\n", err)
+		return nil, fmt.Errorf("error getting list of pods check connectivity. %w", err)
+	}
+
+	// Print and return the pod name and namespace
+	fmt.Println("Pods:")
+	for _, pod := range pods.Items {
+		fmt.Printf("Namespace: %s, Name: %s\n", pod.Namespace, pod.Name)
+	}
+	return pods.Items, nil
+}
+
 func getLogs(pods []corev1.Pod) {
 	fmt.Println("Pod Logs:")
+
+	tailLines := int64(1)
 
 	logsPath := "./logs"
 	err := os.MkdirAll(logsPath, 0755)
@@ -124,7 +130,8 @@ func getLogs(pods []corev1.Pod) {
 	}
 
 	for _, pod := range pods {
-		podLogs, err := clientset.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, &corev1.PodLogOptions{}).DoRaw(context.Background())
+		time.Sleep(2 * time.Second)
+		podLogs, err := clientset.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, &corev1.PodLogOptions{TailLines: &tailLines}).DoRaw(context.Background())
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error getting logs for pod %s: %v\n", pod.Name, err)
 			continue
@@ -142,14 +149,6 @@ func getLogs(pods []corev1.Pod) {
 	}
 }
 
-/*
-func createLogs(pods []corev1.Pod) {
-	fmt.Println("Capturing logs in a text file:")
-	for _, pod := range pods {
-		file, err := os.Create(pod.Name + ".txt")
-		if err != nil {
-			log.Fatalf("Error creating file: %v", err)
-		}
-	}
-	defer file.Close()
-}*/
+func createTar() {
+	fmt.Println("You called the tar flag")
+}
