@@ -1,6 +1,5 @@
 /*
 Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
@@ -46,6 +45,9 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cnvrgctl.yaml)")
+
+	// Persistent flag to define the namespace
+	rootCmd.PersistentFlags().StringP("namespace", "n", "default", "If present, the namespace scope for this CLI request")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
