@@ -4,11 +4,14 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"context"
 	"fmt"
-	"log"
+	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -32,6 +35,9 @@ Examples:
   # Gather all container logs in the cnvrg namespace.
   cnvrgctl -n cnvrg logs 
 
+  # Gather all container logs in the cnvrg namespace and select the last 10 lines.
+  cnvrgctl -n cnvrg logs -l 10
+
   # Gather all container logs and tar in the a .tar files
   cnvrgctl -n cnvrg logs --tar`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -43,19 +49,30 @@ Examples:
 			createTar()
 		}
 
-		// testing how to pass a namespace from the flag
+		// Pass a namespace to the logs command
 		ns, _ := cmd.Flags().GetString("namespace")
-		fmt.Printf("The namespace that was defined is %s", ns)
+
+		// Pass the number of lines to gather when grabbing logs
+		lines, _ := cmd.Flags().GetInt("lines")
 
 		// calls connect function to set the clientset for kubectl access
-		connectToK8s()
+		err := connectToK8s()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error connecting to cluster, check your connectivity. %v", err)
+		}
 
 		// return a list all pods in the cnvrg namespace
-		// TODO: add a flag to select the namespace
-		podList, _ := getPods(ns)
+		podList, err := getPods(ns)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "check your connectivity to the kubernetes cluster. %v", err)
+		}
 
 		// takes the podlist and gathers logs for each pod and saves to txt file
-		getLogs(podList)
+		err = getLogs(podList, lines)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error gathering logs. %v", err)
+		}
+
 	},
 }
 
@@ -65,9 +82,12 @@ func init() {
 
 	// Adds the flag -t --tar to the logs command this is local
 	logsCmd.Flags().BoolP("tar", "t", false, "tarball the log files")
+
+	// Add the flag -n --number to select the number of logs to grab
+	logsCmd.Flags().IntP("lines", "l", 100, "define the number of lines in the log to return")
 }
 
-func connectToK8s() {
+func connectToK8s() error {
 	kubeconfig := os.Getenv("KUBECONFIG")
 	if kubeconfig == "" {
 		// If KUBECONFIG is not set, use default path
@@ -82,19 +102,19 @@ func connectToK8s() {
 		// If building config fails, try in-cluster config
 		config, err = rest.InClusterConfig()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "error building the kubeconfig, exiting %v\n", err)
-			os.Exit(1)
+			return fmt.Errorf("error building the kubeconfig, exiting %w", err)
 		}
 	}
 
 	// Create Kubernetes client
 	clientset, err = kubernetes.NewForConfig(config)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error creating kubernetes client, exiting %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("error creating kubernetes client, exiting %w", err)
 	}
+	return nil
 }
 
+// Gets the home env variable for linux/windows
 func homeDir() string {
 	if h := os.Getenv("HOME"); h != "" {
 		return h
@@ -106,8 +126,7 @@ func getPods(ns string) ([]corev1.Pod, error) {
 	// List Pods
 	pods, err := clientset.CoreV1().Pods(ns).List(context.Background(), v1.ListOptions{})
 	if err != nil {
-		//		fmt.Fprintf(os.Stderr, "error listing pods: %v\n", err)
-		return nil, fmt.Errorf("error getting list of pods check connectivity. %w", err)
+		return nil, fmt.Errorf("getting the list of pods failed. %w", err)
 	}
 
 	// Print and return the pod name and namespace
@@ -118,26 +137,24 @@ func getPods(ns string) ([]corev1.Pod, error) {
 	return pods.Items, nil
 }
 
-func getLogs(pods []corev1.Pod) {
+func getLogs(pods []corev1.Pod, num int) error {
 	fmt.Println("Pod Logs:")
 
-	tailLines := int64(1)
+	tailLines := int64(num)
 
 	logsPath := "./logs"
 	err := os.MkdirAll(logsPath, 0755)
 	if err != nil {
-		fmt.Println("error creating folder:", err)
-		return
+		return fmt.Errorf("error creating the folder. %w", err)
 	}
 
 	err = os.Chdir(logsPath)
 	if err != nil {
-		fmt.Println("error changing directory:", err)
-		return
+		return fmt.Errorf("error changing directory. %w", err)
 	}
 
 	for _, pod := range pods {
-		time.Sleep(2 * time.Second)
+		time.Sleep(1 * time.Second)
 		podLogs, err := clientset.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, &corev1.PodLogOptions{TailLines: &tailLines}).DoRaw(context.Background())
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error getting logs for pod %s: %v\n", pod.Name, err)
@@ -146,7 +163,7 @@ func getLogs(pods []corev1.Pod) {
 
 		file, err := os.Create(pod.Name + ".txt")
 		if err != nil {
-			log.Fatalf("error creating file: %v", err)
+			return fmt.Errorf("error creating the file. %w", err)
 		}
 		defer file.Close()
 
@@ -154,8 +171,80 @@ func getLogs(pods []corev1.Pod) {
 		fmt.Fprint(file, string(podLogs))
 		file.Close()
 	}
+	return nil
 }
 
-func createTar() {
+// TODO: create a flag that lets you define the folder the files live in; default ./logs
+func createTar() error {
 	fmt.Println("You called the tar flag")
+
+	tarFile := "logs.tar.gz"
+	dir := "logs"
+
+	err := createTarGz(dir, tarFile)
+	if err != nil {
+		return fmt.Errorf("error creating the tar file %w", err)
+	}
+
+	fmt.Println("Tar file created successfully:", tarFile)
+	return nil
+}
+
+func createTarGz(source string, target string) error {
+	// Create the target file
+	tarfile, err := os.Create(target)
+	if err != nil {
+		return err
+	}
+	defer tarfile.Close()
+
+	// Create a gzip writer
+	gzw := gzip.NewWriter(tarfile)
+	defer gzw.Close()
+
+	// Create a new tar writer
+	tw := tar.NewWriter(gzw)
+	defer tw.Close()
+
+	// Walk through the source directory
+	err = filepath.Walk(source, func(file string, fi os.FileInfo, err error) error {
+		if err != nil {
+			return fmt.Errorf("error walking the file path. %w", err)
+		}
+
+		// Only include .txt files
+		if !strings.HasSuffix(fi.Name(), ".txt") {
+			return nil
+		}
+
+		//TODO: wy is it opening file not tarfile
+		// Open the file
+		f, err := os.Open(file)
+		if err != nil {
+			return fmt.Errorf("error opening the file. %w", err)
+		}
+		defer f.Close()
+
+		// Create a new tar header
+		hdr := &tar.Header{
+			Name:    strings.TrimPrefix(file, source+"/"),
+			Size:    fi.Size(),
+			Mode:    int64(fi.Mode()),
+			ModTime: fi.ModTime(),
+		}
+
+		// Write the header to the tar archive
+		if err := tw.WriteHeader(hdr); err != nil {
+			return fmt.Errorf("error writing the header to the tar archive. %w", err)
+		}
+
+		// Copy the file contents to the tar archive
+		if _, err := io.Copy(tw, f); err != nil {
+			return fmt.Errorf("error copying the file contents to the tar archive. %w", err)
+		}
+
+		return nil
+	})
+
+	return err
 }
