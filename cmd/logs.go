@@ -1,5 +1,5 @@
 /*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 NAME HERE BRADLEY.SOPER@CNVRG.IO
 */
 package cmd
 
@@ -18,11 +18,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 )
-
-var clientset *kubernetes.Clientset
 
 // logsCmd represents the logs command
 var logsCmd = &cobra.Command{
@@ -38,7 +34,7 @@ Examples:
   # Gather all container logs in the cnvrg namespace and select the last 10 lines.
   cnvrgctl -n cnvrg logs -l 10
 
-  # Gather all container logs and tar in the a .tar files
+  # Gather all container logs and tar the text files into a tar.gz
   cnvrgctl -n cnvrg logs --tar`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("logs called")
@@ -62,7 +58,7 @@ Examples:
 		}
 
 		// return a list all pods in the cnvrg namespace
-		podList, err := getPods(ns)
+		podList, err := getPods(ns, clientset)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "check your connectivity to the kubernetes cluster. %v", err)
 		}
@@ -87,42 +83,7 @@ func init() {
 	logsCmd.Flags().IntP("lines", "l", 100, "define the number of lines in the log to return")
 }
 
-func connectToK8s() error {
-	kubeconfig := os.Getenv("KUBECONFIG")
-	if kubeconfig == "" {
-		// If KUBECONFIG is not set, use default path
-		if home := homeDir(); home != "" {
-			kubeconfig = filepath.Join(home, ".kube", "config")
-		}
-	}
-
-	// Use the current context in kubeconfig
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
-	if err != nil {
-		// If building config fails, try in-cluster config
-		config, err = rest.InClusterConfig()
-		if err != nil {
-			return fmt.Errorf("error building the kubeconfig, exiting %w", err)
-		}
-	}
-
-	// Create Kubernetes client
-	clientset, err = kubernetes.NewForConfig(config)
-	if err != nil {
-		return fmt.Errorf("error creating kubernetes client, exiting %w", err)
-	}
-	return nil
-}
-
-// Gets the home env variable for linux/windows
-func homeDir() string {
-	if h := os.Getenv("HOME"); h != "" {
-		return h
-	}
-	return os.Getenv("USERPROFILE") // Windows
-}
-
-func getPods(ns string) ([]corev1.Pod, error) {
+func getPods(ns string, clientset kubernetes.Interface) ([]corev1.Pod, error) {
 	// List Pods
 	pods, err := clientset.CoreV1().Pods(ns).List(context.Background(), v1.ListOptions{})
 	if err != nil {

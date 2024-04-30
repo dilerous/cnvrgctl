@@ -6,12 +6,19 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
-var cfgFile string
+var (
+	cfgFile   string
+	clientset *kubernetes.Clientset
+)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -76,4 +83,39 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
+}
+
+func connectToK8s() error {
+	kubeconfig := os.Getenv("KUBECONFIG")
+	if kubeconfig == "" {
+		// If KUBECONFIG is not set, use default path
+		if home := homeDir(); home != "" {
+			kubeconfig = filepath.Join(home, ".kube", "config")
+		}
+	}
+
+	// Use the current context in kubeconfig
+	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+	if err != nil {
+		// If building config fails, try in-cluster config
+		config, err = rest.InClusterConfig()
+		if err != nil {
+			return fmt.Errorf("error building the kubeconfig, exiting %w", err)
+		}
+	}
+
+	// Create Kubernetes client
+	clientset, err = kubernetes.NewForConfig(config)
+	if err != nil {
+		return fmt.Errorf("error creating kubernetes client, exiting %w", err)
+	}
+	return nil
+}
+
+// Gets the home env variable for linux/windows
+func homeDir() string {
+	if h := os.Getenv("HOME"); h != "" {
+		return h
+	}
+	return os.Getenv("USERPROFILE") // Windows
 }
