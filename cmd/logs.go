@@ -38,12 +38,7 @@ Examples:
   cnvrgctl -n cnvrg logs --tar`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("logs called")
-
-		// testing how to add a local flag
-		tarFlag, _ := cmd.Flags().GetBool("tar")
-		if tarFlag {
-			createTar()
-		}
+		fmt.Fprintf(cmd.OutOrStdout(), "logs called")
 
 		// Pass a namespace to the logs command
 		ns, _ := cmd.Flags().GetString("namespace")
@@ -64,9 +59,18 @@ Examples:
 		}
 
 		// takes the podlist and gathers logs for each pod and saves to txt file
-		err = getLogs(podList, lines)
+		err = getLogs(podList, lines, clientset)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error gathering logs. %v", err)
+		}
+
+		// Tars the log files
+		tarFlag, _ := cmd.Flags().GetBool("tar")
+		if tarFlag {
+			err = createTar()
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "there was an issue creating the logs.tar.gz file. %v", err)
+			}
 		}
 
 	},
@@ -93,12 +97,12 @@ func getPods(ns string, clientset kubernetes.Interface) ([]corev1.Pod, error) {
 	// Print and return the pod name and namespace
 	fmt.Println("Pods:")
 	for _, pod := range pods.Items {
-		fmt.Printf("Namespace: %s, Name: %s\n", pod.Namespace, pod.Name)
+		fmt.Printf("pod name: %s, namespace: %s\n", pod.Name, pod.Namespace)
 	}
 	return pods.Items, nil
 }
 
-func getLogs(pods []corev1.Pod, num int) error {
+func getLogs(pods []corev1.Pod, num int, clientset kubernetes.Interface) error {
 	fmt.Println("Pod Logs:")
 
 	tailLines := int64(num)
@@ -109,6 +113,7 @@ func getLogs(pods []corev1.Pod, num int) error {
 		return fmt.Errorf("error creating the folder. %w", err)
 	}
 
+	// change to the logs directory
 	err = os.Chdir(logsPath)
 	if err != nil {
 		return fmt.Errorf("error changing directory. %w", err)
@@ -132,6 +137,12 @@ func getLogs(pods []corev1.Pod, num int) error {
 		fmt.Fprint(file, string(podLogs))
 		file.Close()
 	}
+
+	// changing back to the root directory
+	err = os.Chdir("../")
+	if err != nil {
+		return fmt.Errorf("error changing directory to root. %w", err)
+	}
 	return nil
 }
 
@@ -140,11 +151,11 @@ func createTar() error {
 	fmt.Println("You called the tar flag")
 
 	tarFile := "logs.tar.gz"
-	dir := "logs"
+	dir := "./"
 
 	err := createTarGz(dir, tarFile)
 	if err != nil {
-		return fmt.Errorf("error creating the tar file %w", err)
+		return fmt.Errorf("error creating the tar file, %v. %w", tarFile, err)
 	}
 
 	fmt.Println("Tar file created successfully:", tarFile)
@@ -153,19 +164,19 @@ func createTar() error {
 
 func createTarGz(source string, target string) error {
 	// Create the target file
-	tarfile, err := os.Create(target)
+	file, err := os.Create(target)
 	if err != nil {
-		return err
+		return fmt.Errorf("file creation failed, the name of the file is %v. %w", target, err)
 	}
-	defer tarfile.Close()
+	defer file.Close()
 
 	// Create a gzip writer
-	gzw := gzip.NewWriter(tarfile)
-	defer gzw.Close()
+	gzwFile := gzip.NewWriter(file)
+	defer gzwFile.Close()
 
 	// Create a new tar writer
-	tw := tar.NewWriter(gzw)
-	defer tw.Close()
+	twFile := tar.NewWriter(gzwFile)
+	defer twFile.Close()
 
 	// Walk through the source directory
 	err = filepath.Walk(source, func(file string, fi os.FileInfo, err error) error {
@@ -182,7 +193,7 @@ func createTarGz(source string, target string) error {
 		// Open the file
 		f, err := os.Open(file)
 		if err != nil {
-			return fmt.Errorf("error opening the file. %w", err)
+			return fmt.Errorf("error opening the file %v. %w", file, err)
 		}
 		defer f.Close()
 
@@ -195,12 +206,12 @@ func createTarGz(source string, target string) error {
 		}
 
 		// Write the header to the tar archive
-		if err := tw.WriteHeader(hdr); err != nil {
+		if err := twFile.WriteHeader(hdr); err != nil {
 			return fmt.Errorf("error writing the header to the tar archive. %w", err)
 		}
 
 		// Copy the file contents to the tar archive
-		if _, err := io.Copy(tw, f); err != nil {
+		if _, err := io.Copy(twFile, f); err != nil {
 			return fmt.Errorf("error copying the file contents to the tar archive. %w", err)
 		}
 
