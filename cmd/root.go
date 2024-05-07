@@ -6,7 +6,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -104,13 +103,13 @@ func connectToK8s() error {
 
 	// If KUBECONFIG is not set, use default path
 	//TODO look at making this a case statement
-	kubeconfig := os.Getenv("KUBECONFIG")
-	if kubeconfig == "" {
-		kubeconfig = kubeConfigFlag
-		if kubeConfigFlag == "" {
-			if home := homeDir(); home != "" {
-				kubeconfig = filepath.Join(home, ".kube", "config")
-			}
+	envKubeConfig := os.Getenv("KUBECONFIG")
+	kubeconfig := kubeConfigFlag
+
+	if kubeConfigFlag == "" {
+		kubeconfig = envKubeConfig
+		if kubeconfig == "" {
+			kubeconfig = homeDir()
 		}
 	}
 

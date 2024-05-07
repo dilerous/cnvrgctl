@@ -103,7 +103,7 @@ func getPods(ns string, clientset kubernetes.Interface) ([]corev1.Pod, error) {
 }
 
 func getLogs(pods []corev1.Pod, num int, clientset kubernetes.Interface) error {
-	fmt.Println("Pod Logs:")
+	fmt.Println("Grabbing the following pod logs:")
 
 	tailLines := int64(num)
 
