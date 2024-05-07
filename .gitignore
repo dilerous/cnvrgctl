@@ -4,3 +4,4 @@ cmd/logs.tar.gz
 logs.tar.gz
 .gitignore
 c.out
+.DS_Store

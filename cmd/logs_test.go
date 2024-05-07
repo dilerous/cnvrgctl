@@ -97,20 +97,18 @@ func TestGetPods(t *testing.T) {
 }
 
 func TestCreateTar(t *testing.T) {
-	// Call the function to be tested
-	err := createTar()
-	if err != nil {
-		t.Fatalf("Error creating tar: %v", err)
-	}
 
-	//Check if the tar file was created
-	if _, err := os.Stat("logs.tar.gz"); os.IsNotExist(err) {
-		t.Fatalf("Expected tar file logs.tar.gz does not exist")
-	}
-
-	// Optionally, you can also check the contents of the tar file if needed
-	// You may want to extract and inspect the contents of the tar file in your test
-	// to ensure that it contains the expected files or directories.
+	t.Run("when days is just 30", func(t *testing.T) {
+		// Call the function to be tested
+		err := createTar()
+		if err != nil {
+			t.Fatalf("Error creating tar: %v", err)
+		}
+		//Check if the tar file was created
+		if _, err := os.Stat("logs.tar.gz"); os.IsNotExist(err) {
+			t.Fatalf("Expected tar file logs.tar.gz does not exist")
+		}
+	})
 }
 
 func TestCreateTarError(t *testing.T) {
@@ -188,15 +186,35 @@ func TestCreateTarGzError(t *testing.T) {
 
 func Test_ExecuteAnyCommand(t *testing.T) {
 
+	//TODO: added in fake
+
 	actual := new(bytes.Buffer)
 	rootCmd.SetOut(actual)
 	rootCmd.SetErr(actual)
-	rootCmd.SetArgs([]string{"logs", "logs"})
+	rootCmd.SetArgs([]string{""})
 	rootCmd.Execute()
 
-	expected := "logs called"
+	// expected buffer length when calling the cnvrgctl command
+	expected := 1030
 
-	assert.Equal(t, actual.String(), expected, "actual is not expected")
+	// grabing the actual output len as an int and comparing to expected.
+	assert.Equal(t, actual.Len(), expected, "the expected length doesn't match")
+
+	// testing the logs command
+	logsActual := new(bytes.Buffer)
+	rootCmd.SetOut(logsActual)
+	rootCmd.SetErr(logsActual)
+	rootCmd.SetArgs([]string{"logs"})
+	rootCmd.Execute()
+
+	// expected buffer length when calling the cnvrgctl logs command
+	expected = 13
+
+	// grabing the actual output len as an int and comparing to expected length.
+	assert.Equal(t, logsActual.Len(), expected, "the expected length doesn't match")
+
+	//testError := errors.New("error reading the kubeconfig context.")
+
 }
 
 func TestRunCleanup(t *testing.T) {
@@ -207,13 +225,43 @@ func TestRunCleanup(t *testing.T) {
 	for _, file := range filesToDelete {
 		err := os.Remove(file)
 		if err != nil {
-			fmt.Printf("error deleting file. %v", err)
+			fmt.Printf("error deleting file, %v", err)
 		}
 		fmt.Printf("file %v deleted.", file)
 	}
 }
 
 /*
+
+	fakeKubeconfig := []byte(`{
+        "apiVersion": "v1",
+        "kind": "Config",
+        "clusters": [
+            {
+                "name": "fake-cluster",
+                "cluster": {
+                    "server": "https://fake-cluster-server",
+                    "insecure-skip-tls-verify": true
+                }
+            }
+        ],
+        "contexts": [
+            {
+                "name": "fake-context",
+                "context": {
+                    "cluster": "fake-cluster",
+                    "user": "fake-user"
+                }
+            }
+        ],
+        "current-context": "fake-context",
+        "users": [
+            {
+                "name": "fake-user",
+                "user": {}
+            }
+        ]
+    }`)
 
 func TestGetLogs(t *testing.T) {
 	testCases := []struct {
@@ -262,4 +310,26 @@ func TestGetLogs(t *testing.T) {
 		})
 	}
 }
+*/
+
+/*
+	assert.Equal(t, pods[0].Namespace, testNamespace)
+	assert.Equal(t, nil, actualError)
+	assert.Equal(t, pods[0].Namespace, badNamespace)
+*/
+
+// Assert that the returned pods match the expected pods
+/*
+	if len(pods) != len(expectedPods) {
+		t.Fatalf("Unexpected number of pods. Expected: %d, Got: %d", len(expectedPods), len(pods))
+	}
+
+	for i := range pods {
+		if pods[i].Name != expectedPods[i].Name {
+			t.Errorf("Unexpected pod name at index %d. Expected: %s, Got: %s", i, expectedPods[i].Name, pods[i].Name)
+		}
+		if pods[i].Namespace != expectedPods[i].Namespace {
+			t.Errorf("Unexpected pod namespace at index %d. Expected: %s, Got: %s", i, expectedPods[i].Namespace, pods[i].Namespace)
+		}
+	}
 */

@@ -59,6 +59,12 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
+	// Persistent flag for setting the kubeconfig
+	rootCmd.PersistentFlags().StringP("kubeconfig", "", "", "Path to the kubeconfig file to use for CLI requests")
+
+	// Persistent flag for setting the context
+	rootCmd.PersistentFlags().StringP("context", "", "", "The name of the kubeconfig context to use")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -86,11 +92,25 @@ func initConfig() {
 }
 
 func connectToK8s() error {
+	kubeContextFlag, err := rootCmd.Flags().GetString("context")
+	if err != nil {
+		return fmt.Errorf("error reading the kubeconfig context. %w", err)
+	}
+
+	kubeConfigFlag, err := rootCmd.Flags().GetString("kubeconfig")
+	if err != nil {
+		return fmt.Errorf("error getting the kubeconfig path. %w", err)
+	}
+
+	// If KUBECONFIG is not set, use default path
+	//TODO look at making this a case statement
 	kubeconfig := os.Getenv("KUBECONFIG")
 	if kubeconfig == "" {
-		// If KUBECONFIG is not set, use default path
-		if home := homeDir(); home != "" {
-			kubeconfig = filepath.Join(home, ".kube", "config")
+		kubeconfig = kubeConfigFlag
+		if kubeConfigFlag == "" {
+			if home := homeDir(); home != "" {
+				kubeconfig = filepath.Join(home, ".kube", "config")
+			}
 		}
 	}
 
@@ -100,14 +120,22 @@ func connectToK8s() error {
 		// If building config fails, try in-cluster config
 		config, err = rest.InClusterConfig()
 		if err != nil {
-			return fmt.Errorf("error building the kubeconfig, exiting %w", err)
+			return fmt.Errorf("error building the kubeconfig, exiting. %w", err)
+		}
+	}
+
+	// Use context inputed by context flag
+	if kubeConfigFlag != "" {
+		config, err = buildConfigWithContextFromFlags(kubeContextFlag, kubeconfig)
+		if err != nil {
+			return fmt.Errorf("the context doesn't exists. %w", err)
 		}
 	}
 
 	// Create Kubernetes client
 	clientset, err = kubernetes.NewForConfig(config)
 	if err != nil {
-		return fmt.Errorf("error creating kubernetes client, exiting %w", err)
+		return fmt.Errorf("error creating kubernetes client, exiting. %w", err)
 	}
 	return nil
 }
@@ -118,4 +146,14 @@ func homeDir() string {
 		return h
 	}
 	return os.Getenv("USERPROFILE") // Windows
+}
+
+// Build the clientconfig when a context is specified.
+func buildConfigWithContextFromFlags(context string, kubeconfigPath string) (*rest.Config, error) {
+	fmt.Println(kubeconfigPath)
+	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath},
+		&clientcmd.ConfigOverrides{
+			CurrentContext: context,
+		}).ClientConfig()
 }

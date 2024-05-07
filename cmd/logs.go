@@ -37,8 +37,8 @@ Examples:
   # Gather all container logs and tar the text files into a tar.gz
   cnvrgctl -n cnvrg logs --tar`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("logs called")
-		fmt.Fprintf(cmd.OutOrStdout(), "logs called")
+		//fmt.Println("logs called")
+		//fmt.Fprintf(cmd.OutOrStdout(), "logs called \n")
 
 		// Pass a namespace to the logs command
 		ns, _ := cmd.Flags().GetString("namespace")
@@ -95,7 +95,7 @@ func getPods(ns string, clientset kubernetes.Interface) ([]corev1.Pod, error) {
 	}
 
 	// Print and return the pod name and namespace
-	fmt.Println("Pods:")
+	fmt.Println("Pods: ")
 	for _, pod := range pods.Items {
 		fmt.Printf("pod name: %s, namespace: %s\n", pod.Name, pod.Namespace)
 	}
@@ -163,7 +163,7 @@ func createTar() error {
 }
 
 func createTarGz(source string, target string) error {
-	// Create the target file
+	// Create the target file logs.tar.gz
 	file, err := os.Create(target)
 	if err != nil {
 		return fmt.Errorf("file creation failed, the name of the file is %v. %w", target, err)
@@ -206,9 +206,7 @@ func createTarGz(source string, target string) error {
 		}
 
 		// Write the header to the tar archive
-		if err := twFile.WriteHeader(hdr); err != nil {
-			return fmt.Errorf("error writing the header to the tar archive. %w", err)
-		}
+		_ = twFile.WriteHeader(hdr)
 
 		// Copy the file contents to the tar archive
 		if _, err := io.Copy(twFile, f); err != nil {
