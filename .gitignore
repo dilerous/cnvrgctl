@@ -1,4 +1,5 @@
 logs/
+/bin/cnvrgctl
 cmd/logs
 cmd/logs.tar.gz
 logs.tar.gz
