@@ -15,9 +15,14 @@ import (
 )
 
 var (
-	cfgFile   string
-	clientset *kubernetes.Clientset
+	cfgFile string
+	//clientset *kubernetes.Clientset
 )
+
+type KubernetesAPI struct {
+	Suffix string
+	Client kubernetes.Interface
+}
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -90,15 +95,16 @@ func initConfig() {
 	}
 }
 
-func connectToK8s() error {
+func connectToK8s() (*KubernetesAPI, error) {
+
 	kubeContextFlag, err := rootCmd.Flags().GetString("context")
 	if err != nil {
-		return fmt.Errorf("error reading the kubeconfig context. %w", err)
+		return nil, fmt.Errorf("error reading the kubeconfig context. %w", err)
 	}
 
 	kubeConfigFlag, err := rootCmd.Flags().GetString("kubeconfig")
 	if err != nil {
-		return fmt.Errorf("error getting the kubeconfig path. %w", err)
+		return nil, fmt.Errorf("error getting the kubeconfig path. %w", err)
 	}
 
 	// If KUBECONFIG is not set, use default path
@@ -109,7 +115,7 @@ func connectToK8s() error {
 	if kubeConfigFlag == "" {
 		kubeconfig = envKubeConfig
 		if kubeconfig == "" {
-			kubeconfig = homeDir()
+			kubeconfig = homeDir() + "/.kube/config"
 		}
 	}
 
@@ -119,7 +125,7 @@ func connectToK8s() error {
 		// If building config fails, try in-cluster config
 		config, err = rest.InClusterConfig()
 		if err != nil {
-			return fmt.Errorf("error building the kubeconfig, exiting. %w", err)
+			return nil, fmt.Errorf("error building the kubeconfig. %w", err)
 		}
 	}
 
@@ -127,16 +133,17 @@ func connectToK8s() error {
 	if kubeConfigFlag != "" {
 		config, err = buildConfigWithContextFromFlags(kubeContextFlag, kubeconfig)
 		if err != nil {
-			return fmt.Errorf("the context doesn't exists. %w", err)
+			return nil, fmt.Errorf("the context doesn't exists. %w", err)
 		}
 	}
 
 	// Create Kubernetes client
-	clientset, err = kubernetes.NewForConfig(config)
+	client := KubernetesAPI{}
+	client.Client, err = kubernetes.NewForConfig(config)
 	if err != nil {
-		return fmt.Errorf("error creating kubernetes client, exiting. %w", err)
+		return nil, fmt.Errorf("error creating kubernetes client, exiting. %w", err)
 	}
-	return nil
+	return &client, nil
 }
 
 // Gets the home env variable for linux/windows

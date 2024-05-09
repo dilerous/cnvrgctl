@@ -75,6 +75,7 @@ func TestGetPods(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
 			fakeClientset := fake.NewSimpleClientset(test.pods...)
+			logDir := "./logs"
 
 			pods, err := getPods(
 				test.targetNamespace,
@@ -87,7 +88,7 @@ func TestGetPods(t *testing.T) {
 				}
 			}
 
-			err = getLogs(pods, 10, fakeClientset)
+			err = getLogs(pods, 10, logDir, fakeClientset)
 			if err != nil {
 				t.Fatalf("logs not gathered: %v", err)
 			}
@@ -96,9 +97,22 @@ func TestGetPods(t *testing.T) {
 	}
 }
 
+/*
 func TestGetLogsError(t *testing.T) {
 
+	fakeClientsetWithErr := fake.NewSimpleClientset()
+	fakeClientsetWithErr.AddReactor("list", "pods", func(action reactor.Action) (handled bool, ret runtime.Object, err error) {
+
+		// Inspect the action being performed
+		fmt.Println("grabbing the output of AddReactor")
+		fmt.Printf("Action: %s, Resource: %s\n", action.GetVerb(), action.GetResource().GroupResource())
+
+		// Return an error to simulate a failed operation
+		return true, nil, errors.New("fake list error")
+	})
+
 }
+*/
 
 func TestCreateTar(t *testing.T) {
 
@@ -190,8 +204,12 @@ func TestCreateTarGzError(t *testing.T) {
 
 func Test_ExecuteAnyCommand(t *testing.T) {
 
+	// Test calling connectToK8s()
+	//client, err := connectToK8s()
+
 	//TODO: added in fake
 
+	// Testing the root command
 	actual := new(bytes.Buffer)
 	rootCmd.SetOut(actual)
 	rootCmd.SetErr(actual)

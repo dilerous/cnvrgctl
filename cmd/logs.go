@@ -25,7 +25,7 @@ var logsCmd = &cobra.Command{
 	Use:   "logs",
 	Short: "The command will grab logs from all running pods in the namespace defined",
 	Long: `Capture the logs for every container in a specified namespace and save the 
-files to ./logs/<pod-name>.txt. 
+files to ./<log-dir>/<pod-name>.txt. 
 	
 Examples:
   # Gather all container logs in the cnvrg namespace.
@@ -43,23 +43,27 @@ Examples:
 		// Pass a namespace to the logs command
 		ns, _ := cmd.Flags().GetString("namespace")
 
+		// Pass a namespace to the logs command
+		logDir, _ := cmd.Flags().GetString("log-dir")
+
 		// Pass the number of lines to gather when grabbing logs
 		lines, _ := cmd.Flags().GetInt("lines")
 
 		// calls connect function to set the clientset for kubectl access
-		err := connectToK8s()
+		api, err := connectToK8s()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error connecting to cluster, check your connectivity. %v", err)
 		}
 
 		// return a list all pods in the cnvrg namespace
-		podList, err := getPods(ns, clientset)
+		podList, err := getPods(ns, api.Client)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "check your connectivity to the kubernetes cluster. %v", err)
+			fmt.Fprintf(os.Stderr, "error getting the list of pods. %v", err)
+			return
 		}
 
 		// takes the podlist and gathers logs for each pod and saves to txt file
-		err = getLogs(podList, lines, clientset)
+		err = getLogs(podList, lines, logDir, api.Client)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error gathering logs. %v", err)
 		}
@@ -69,7 +73,7 @@ Examples:
 		if tarFlag {
 			err = createTar()
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "there was an issue creating the logs.tar.gz file. %v", err)
+				fmt.Fprintf(os.Stderr, "error creating the tar file. %v", err)
 			}
 		}
 
@@ -81,10 +85,13 @@ func init() {
 	rootCmd.AddCommand(logsCmd)
 
 	// Adds the flag -t --tar to the logs command this is local
-	logsCmd.Flags().BoolP("tar", "t", false, "tarball the log files")
+	logsCmd.Flags().BoolP("tar", "t", false, "Tarball the log files")
 
 	// Add the flag -n --number to select the number of logs to grab
-	logsCmd.Flags().IntP("lines", "l", 100, "define the number of lines in the log to return")
+	logsCmd.Flags().IntP("lines", "l", 100, "Define the number of lines in the log to return")
+
+	// Persistent flag to define the log directory
+	logsCmd.PersistentFlags().StringP("log-dir", "", "./logs", "Define the directory logs are saved to.")
 }
 
 func getPods(ns string, clientset kubernetes.Interface) ([]corev1.Pod, error) {
@@ -102,12 +109,12 @@ func getPods(ns string, clientset kubernetes.Interface) ([]corev1.Pod, error) {
 	return pods.Items, nil
 }
 
-func getLogs(pods []corev1.Pod, num int, clientset kubernetes.Interface) error {
+func getLogs(pods []corev1.Pod, num int, logdir string, clientset kubernetes.Interface) error {
 	fmt.Println("Grabbing the following pod logs:")
 
 	tailLines := int64(num)
 
-	logsPath := "./logs"
+	logsPath := logdir
 	err := os.MkdirAll(logsPath, 0755)
 	if err != nil {
 		return fmt.Errorf("error creating the folder. %w", err)
