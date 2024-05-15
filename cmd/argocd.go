@@ -40,7 +40,7 @@ Examples:
 # Perform a dry run install of argocd.
   cnvrgctl -n argocd install argocd --dry-run
   
-# Install argocd nd specify a custom chart URL .
+# Install argocd and specify a custom chart URL .
   cnvrgctl -n argocd install argocd --repo  https://github.com/argo-helm`,
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("called the install argocd command function")
@@ -165,8 +165,8 @@ func deployHelmChart(ns string, c *chart.Chart, release string, dryRun bool) err
 	}
 
 	//log and print install was successful
-	fmt.Printf("Installed Chart from path: %s in namespace: %s\n", rel.Name, rel.Namespace)
-	log.Printf("Installed Chart from path: %s in namespace: %s\n", rel.Name, rel.Namespace)
+	fmt.Printf("installed Chart from path: %s in namespace: %s\n", rel.Name, rel.Namespace)
+	log.Printf("installed Chart from path: %s in namespace: %s\n", rel.Name, rel.Namespace)
 
 	// this will confirm the values set during installation
 	fmt.Println(rel.Info)
@@ -226,13 +226,13 @@ func checkNamespaceExists(ns string, clientset kubernetes.Interface) (bool, erro
 	_, err := clientset.CoreV1().Namespaces().Get(context.Background(), namespace, v1.GetOptions{})
 	if err != nil {
 		// If the namespace does not exist, an error will be returned
-		log.Fatalf("error getting namespace. %v", err)
-		return false, fmt.Errorf("Namespace %s does not exist: %w\n", namespace, err)
+		fmt.Printf("the namespace doesn't exist %v.\n", namespace)
+		log.Printf("the namespace doesn't exist %v.\n", namespace)
+		return false, nil
 	} else {
 		// If no error is returned, the namespace exists
 		fmt.Printf("Namespace %s exists\n", namespace)
 		log.Printf("Namespace %s exists\n", namespace)
 		return true, nil
-
 	}
 }
