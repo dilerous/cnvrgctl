@@ -1,0 +1,330 @@
+2024/05/13 18:47:19 called the install argocd command function
+2024/05/13 19:07:50 called the install argocd command function
+2024/05/13 19:14:21 called the install argocd command function
+2024/05/13 19:43:35 called the install argocd command function
+2024/05/13 19:45:02 called the install argocd command function
+2024/05/13 19:45:17 creating 49 resource(s)
+2024/05/13 19:45:22 Installed Chart from path: argo in namespace: default
+2024/05/13 19:45:22 map[redis:map[sentinel:map[addr:localhost masterName:BigMaster pass:random port:26379]]]
+2024/05/13 19:52:47 called the install argocd command function
+2024/05/13 19:53:56 called the install argocd command function
+2024/05/13 20:11:08 called the install argocd command function
+2024/05/13 20:11:19 creating 1 resource(s)
+2024/05/13 20:11:23 creating 49 resource(s)
+2024/05/13 20:11:27 Installed Chart from path: argo in namespace: argocd
+2024/05/13 20:11:27 map[redis:map[sentinel:map[addr:localhost masterName:BigMaster pass:random port:26379]]]
+2024/05/13 20:12:29 called the install argocd command function
+2024/05/13 20:12:41 creating 1 resource(s)
+2024/05/13 20:12:45 checking 49 resources for changes
+2024/05/13 20:12:45 Created a new ServiceAccount called "argocd-application-controller" in argocd
+2024/05/13 20:12:45 Created a new ServiceAccount called "argocd-applicationset-controller" in argocd
+2024/05/13 20:12:45 Created a new ServiceAccount called "argocd-notifications-controller" in argocd
+2024/05/13 20:12:46 Created a new ServiceAccount called "argo-argocd-repo-server" in argocd
+2024/05/13 20:12:46 Created a new ServiceAccount called "argocd-server" in argocd
+2024/05/13 20:12:46 Created a new ServiceAccount called "argocd-dex-server" in argocd
+2024/05/13 20:12:46 Created a new Secret called "argocd-notifications-secret" in argocd
+2024/05/13 20:12:46 Created a new Secret called "argocd-secret" in argocd
+2024/05/13 20:12:47 Created a new ConfigMap called "argocd-cm" in argocd
+2024/05/13 20:12:47 Created a new ConfigMap called "argocd-cmd-params-cm" in argocd
+2024/05/13 20:12:47 Created a new ConfigMap called "argocd-gpg-keys-cm" in argocd
+2024/05/13 20:12:47 Created a new ConfigMap called "argocd-notifications-cm" in argocd
+2024/05/13 20:12:48 Created a new ConfigMap called "argocd-rbac-cm" in argocd
+2024/05/13 20:12:48 Created a new ConfigMap called "argocd-ssh-known-hosts-cm" in argocd
+2024/05/13 20:12:48 Created a new ConfigMap called "argocd-tls-certs-cm" in argocd
+2024/05/13 20:12:48 Created a new ConfigMap called "argo-argocd-redis-health-configmap" in argocd
+2024/05/13 20:12:48 Looks like there are no changes for CustomResourceDefinition "applications.argoproj.io"
+2024/05/13 20:12:49 Looks like there are no changes for CustomResourceDefinition "applicationsets.argoproj.io"
+2024/05/13 20:12:49 Looks like there are no changes for CustomResourceDefinition "appprojects.argoproj.io"
+2024/05/13 20:12:50 Created a new ClusterRole called "argo-argocd-application-controller" in 
+2024/05/13 20:12:50 Created a new ClusterRole called "argo-argocd-notifications-controller" in 
+2024/05/13 20:12:50 Created a new ClusterRole called "argo-argocd-server" in 
+2024/05/13 20:12:50 Created a new ClusterRoleBinding called "argo-argocd-application-controller" in 
+2024/05/13 20:12:50 Created a new ClusterRoleBinding called "argo-argocd-notifications-controller" in 
+2024/05/13 20:12:51 Created a new ClusterRoleBinding called "argo-argocd-server" in 
+2024/05/13 20:12:51 Created a new Role called "argo-argocd-application-controller" in argocd
+2024/05/13 20:12:51 Created a new Role called "argo-argocd-applicationset-controller" in argocd
+2024/05/13 20:12:51 Created a new Role called "argo-argocd-notifications-controller" in argocd
+2024/05/13 20:12:52 Created a new Role called "argo-argocd-repo-server" in argocd
+2024/05/13 20:12:52 Created a new Role called "argo-argocd-server" in argocd
+2024/05/13 20:12:52 Created a new Role called "argo-argocd-dex-server" in argocd
+2024/05/13 20:12:52 Created a new RoleBinding called "argo-argocd-application-controller" in argocd
+2024/05/13 20:12:52 Created a new RoleBinding called "argo-argocd-applicationset-controller" in argocd
+2024/05/13 20:12:53 Created a new RoleBinding called "argo-argocd-notifications-controller" in argocd
+2024/05/13 20:12:53 Created a new RoleBinding called "argo-argocd-repo-server" in argocd
+2024/05/13 20:12:53 Created a new RoleBinding called "argo-argocd-server" in argocd
+2024/05/13 20:12:53 Created a new RoleBinding called "argo-argocd-dex-server" in argocd
+2024/05/13 20:12:53 Created a new Service called "argo-argocd-applicationset-controller" in argocd
+2024/05/13 20:12:54 Created a new Service called "argo-argocd-repo-server" in argocd
+2024/05/13 20:12:54 Created a new Service called "argo-argocd-server" in argocd
+2024/05/13 20:12:54 Created a new Service called "argo-argocd-dex-server" in argocd
+2024/05/13 20:12:54 Created a new Service called "argo-argocd-redis" in argocd
+2024/05/13 20:12:54 Created a new Deployment called "argo-argocd-applicationset-controller" in argocd
+2024/05/13 20:12:55 Created a new Deployment called "argo-argocd-notifications-controller" in argocd
+2024/05/13 20:12:55 Created a new Deployment called "argo-argocd-repo-server" in argocd
+2024/05/13 20:12:55 Created a new Deployment called "argo-argocd-server" in argocd
+2024/05/13 20:12:55 Created a new Deployment called "argo-argocd-dex-server" in argocd
+2024/05/13 20:12:56 Created a new Deployment called "argo-argocd-redis" in argocd
+2024/05/13 20:12:56 Created a new StatefulSet called "argo-argocd-application-controller" in argocd
+2024/05/13 20:12:57 Installed Chart from path: argo in namespace: argocd
+2024/05/13 20:12:57 map[redis:map[sentinel:map[addr:localhost masterName:BigMaster pass:random port:26379]]]
+2024/05/13 20:13:46 called the install argocd command function
+2024/05/13 20:13:51 error installing the chart. cannot re-use a name that is still in use
+2024/05/13 20:14:40 called the install argocd command function
+2024/05/13 20:14:43 error installing the chart. cannot re-use a name that is still in use
+2024/05/14 14:22:40 called the install argocd command function
+2024/05/14 14:22:43 creating 1 resource(s)
+2024/05/14 14:22:44 creating 49 resource(s)
+2024/05/14 14:22:45 Installed Chart from path: argo in namespace: argocd
+2024/05/14 14:22:45 map[redis:map[sentinel:map[addr:localhost masterName:BigMaster pass:random port:26379]]]
+2024/05/14 14:55:29 called the install argocd command function
+2024/05/14 14:55:33 creating 1 resource(s)
+2024/05/14 14:55:33 checking 49 resources for changes
+2024/05/14 14:55:33 Created a new ServiceAccount called "argocd-application-controller" in argocd
+2024/05/14 14:55:33 Created a new ServiceAccount called "argocd-applicationset-controller" in argocd
+2024/05/14 14:55:33 Created a new ServiceAccount called "argocd-notifications-controller" in argocd
+2024/05/14 14:55:33 Created a new ServiceAccount called "argo-argocd-repo-server" in argocd
+2024/05/14 14:55:33 Created a new ServiceAccount called "argocd-server" in argocd
+2024/05/14 14:55:33 Created a new ServiceAccount called "argocd-dex-server" in argocd
+2024/05/14 14:55:33 Created a new Secret called "argocd-notifications-secret" in argocd
+2024/05/14 14:55:33 Created a new Secret called "argocd-secret" in argocd
+2024/05/14 14:55:33 Created a new ConfigMap called "argocd-cm" in argocd
+2024/05/14 14:55:33 Created a new ConfigMap called "argocd-cmd-params-cm" in argocd
+2024/05/14 14:55:33 Created a new ConfigMap called "argocd-gpg-keys-cm" in argocd
+2024/05/14 14:55:33 Created a new ConfigMap called "argocd-notifications-cm" in argocd
+2024/05/14 14:55:33 Created a new ConfigMap called "argocd-rbac-cm" in argocd
+2024/05/14 14:55:33 Created a new ConfigMap called "argocd-ssh-known-hosts-cm" in argocd
+2024/05/14 14:55:33 Created a new ConfigMap called "argocd-tls-certs-cm" in argocd
+2024/05/14 14:55:33 Created a new ConfigMap called "argo-argocd-redis-health-configmap" in argocd
+2024/05/14 14:55:33 Looks like there are no changes for CustomResourceDefinition "applications.argoproj.io"
+2024/05/14 14:55:33 Looks like there are no changes for CustomResourceDefinition "applicationsets.argoproj.io"
+2024/05/14 14:55:33 Looks like there are no changes for CustomResourceDefinition "appprojects.argoproj.io"
+2024/05/14 14:55:33 Created a new ClusterRole called "argo-argocd-application-controller" in 
+2024/05/14 14:55:33 Created a new ClusterRole called "argo-argocd-notifications-controller" in 
+2024/05/14 14:55:33 Created a new ClusterRole called "argo-argocd-server" in 
+2024/05/14 14:55:33 Created a new ClusterRoleBinding called "argo-argocd-application-controller" in 
+2024/05/14 14:55:33 Created a new ClusterRoleBinding called "argo-argocd-notifications-controller" in 
+2024/05/14 14:55:33 Created a new ClusterRoleBinding called "argo-argocd-server" in 
+2024/05/14 14:55:33 Created a new Role called "argo-argocd-application-controller" in argocd
+2024/05/14 14:55:33 Created a new Role called "argo-argocd-applicationset-controller" in argocd
+2024/05/14 14:55:33 Created a new Role called "argo-argocd-notifications-controller" in argocd
+2024/05/14 14:55:33 Created a new Role called "argo-argocd-repo-server" in argocd
+2024/05/14 14:55:33 Created a new Role called "argo-argocd-server" in argocd
+2024/05/14 14:55:33 Created a new Role called "argo-argocd-dex-server" in argocd
+2024/05/14 14:55:33 Created a new RoleBinding called "argo-argocd-application-controller" in argocd
+2024/05/14 14:55:33 Created a new RoleBinding called "argo-argocd-applicationset-controller" in argocd
+2024/05/14 14:55:33 Created a new RoleBinding called "argo-argocd-notifications-controller" in argocd
+2024/05/14 14:55:33 Created a new RoleBinding called "argo-argocd-repo-server" in argocd
+2024/05/14 14:55:33 Created a new RoleBinding called "argo-argocd-server" in argocd
+2024/05/14 14:55:33 Created a new RoleBinding called "argo-argocd-dex-server" in argocd
+2024/05/14 14:55:33 Created a new Service called "argo-argocd-applicationset-controller" in argocd
+2024/05/14 14:55:33 Created a new Service called "argo-argocd-repo-server" in argocd
+2024/05/14 14:55:33 Created a new Service called "argo-argocd-server" in argocd
+2024/05/14 14:55:33 Created a new Service called "argo-argocd-dex-server" in argocd
+2024/05/14 14:55:33 Created a new Service called "argo-argocd-redis" in argocd
+2024/05/14 14:55:33 Created a new Deployment called "argo-argocd-applicationset-controller" in argocd
+2024/05/14 14:55:33 Created a new Deployment called "argo-argocd-notifications-controller" in argocd
+2024/05/14 14:55:33 Created a new Deployment called "argo-argocd-repo-server" in argocd
+2024/05/14 14:55:33 Created a new Deployment called "argo-argocd-server" in argocd
+2024/05/14 14:55:33 Created a new Deployment called "argo-argocd-dex-server" in argocd
+2024/05/14 14:55:34 Created a new Deployment called "argo-argocd-redis" in argocd
+2024/05/14 14:55:34 Created a new StatefulSet called "argo-argocd-application-controller" in argocd
+2024/05/14 14:55:34 Installed Chart from path: argo in namespace: argocd
+2024/05/14 14:55:34 &{2024-05-14 14:55:32.304736 -0700 PDT m=+2.782560501 2024-05-14 14:55:32.304736 -0700 PDT m=+2.782560501 0001-01-01 00:00:00 +0000 UTC Install complete deployed In order to access the server UI you have the following options:
+
+1. kubectl port-forward service/argo-argocd-server -n argocd 8080:443
+
+    and then open the browser on http://localhost:8080 and accept the certificate
+
+2. enable ingress in the values file `server.ingress.enabled` and either
+      - Add the annotation for ssl passthrough: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#option-1-ssl-passthrough
+      - Set the `configs.params."server.insecure"` in the values file and terminate SSL at your ingress: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#option-2-multiple-ingress-objects-and-hosts
+
+
+After reaching the UI the first time you can login with username: admin and the random password generated during the installation. You can find the password by running:
+
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+
+(You should delete the initial secret afterwards as suggested by the Getting Started Guide: https://argo-cd.readthedocs.io/en/stable/getting_started/#4-login-using-the-cli)
+ map[]}
+2024/05/14 14:56:21 called the install argocd command function
+2024/05/14 14:56:25 creating 1 resource(s)
+2024/05/14 14:56:25 checking 49 resources for changes
+2024/05/14 14:56:25 Created a new ServiceAccount called "argocd-application-controller" in argocd
+2024/05/14 14:56:25 Created a new ServiceAccount called "argocd-applicationset-controller" in argocd
+2024/05/14 14:56:25 Created a new ServiceAccount called "argocd-notifications-controller" in argocd
+2024/05/14 14:56:25 Created a new ServiceAccount called "argo-argocd-repo-server" in argocd
+2024/05/14 14:56:25 Created a new ServiceAccount called "argocd-server" in argocd
+2024/05/14 14:56:25 Created a new ServiceAccount called "argocd-dex-server" in argocd
+2024/05/14 14:56:25 Created a new Secret called "argocd-notifications-secret" in argocd
+2024/05/14 14:56:25 Created a new Secret called "argocd-secret" in argocd
+2024/05/14 14:56:25 Created a new ConfigMap called "argocd-cm" in argocd
+2024/05/14 14:56:25 Created a new ConfigMap called "argocd-cmd-params-cm" in argocd
+2024/05/14 14:56:25 Created a new ConfigMap called "argocd-gpg-keys-cm" in argocd
+2024/05/14 14:56:25 Created a new ConfigMap called "argocd-notifications-cm" in argocd
+2024/05/14 14:56:25 Created a new ConfigMap called "argocd-rbac-cm" in argocd
+2024/05/14 14:56:25 Created a new ConfigMap called "argocd-ssh-known-hosts-cm" in argocd
+2024/05/14 14:56:25 Created a new ConfigMap called "argocd-tls-certs-cm" in argocd
+2024/05/14 14:56:25 Created a new ConfigMap called "argo-argocd-redis-health-configmap" in argocd
+2024/05/14 14:56:25 Looks like there are no changes for CustomResourceDefinition "applications.argoproj.io"
+2024/05/14 14:56:25 Looks like there are no changes for CustomResourceDefinition "applicationsets.argoproj.io"
+2024/05/14 14:56:25 Looks like there are no changes for CustomResourceDefinition "appprojects.argoproj.io"
+2024/05/14 14:56:25 Created a new ClusterRole called "argo-argocd-application-controller" in 
+2024/05/14 14:56:25 Created a new ClusterRole called "argo-argocd-notifications-controller" in 
+2024/05/14 14:56:25 Created a new ClusterRole called "argo-argocd-server" in 
+2024/05/14 14:56:25 Created a new ClusterRoleBinding called "argo-argocd-application-controller" in 
+2024/05/14 14:56:25 Created a new ClusterRoleBinding called "argo-argocd-notifications-controller" in 
+2024/05/14 14:56:25 Created a new ClusterRoleBinding called "argo-argocd-server" in 
+2024/05/14 14:56:25 Created a new Role called "argo-argocd-application-controller" in argocd
+2024/05/14 14:56:25 Created a new Role called "argo-argocd-applicationset-controller" in argocd
+2024/05/14 14:56:25 Created a new Role called "argo-argocd-notifications-controller" in argocd
+2024/05/14 14:56:25 Created a new Role called "argo-argocd-repo-server" in argocd
+2024/05/14 14:56:25 Created a new Role called "argo-argocd-server" in argocd
+2024/05/14 14:56:25 Created a new Role called "argo-argocd-dex-server" in argocd
+2024/05/14 14:56:25 Created a new RoleBinding called "argo-argocd-application-controller" in argocd
+2024/05/14 14:56:25 Created a new RoleBinding called "argo-argocd-applicationset-controller" in argocd
+2024/05/14 14:56:25 Created a new RoleBinding called "argo-argocd-notifications-controller" in argocd
+2024/05/14 14:56:25 Created a new RoleBinding called "argo-argocd-repo-server" in argocd
+2024/05/14 14:56:25 Created a new RoleBinding called "argo-argocd-server" in argocd
+2024/05/14 14:56:25 Created a new RoleBinding called "argo-argocd-dex-server" in argocd
+2024/05/14 14:56:25 Created a new Service called "argo-argocd-applicationset-controller" in argocd
+2024/05/14 14:56:25 Created a new Service called "argo-argocd-repo-server" in argocd
+2024/05/14 14:56:25 Created a new Service called "argo-argocd-server" in argocd
+2024/05/14 14:56:25 Created a new Service called "argo-argocd-dex-server" in argocd
+2024/05/14 14:56:25 Created a new Service called "argo-argocd-redis" in argocd
+2024/05/14 14:56:25 Created a new Deployment called "argo-argocd-applicationset-controller" in argocd
+2024/05/14 14:56:25 Created a new Deployment called "argo-argocd-notifications-controller" in argocd
+2024/05/14 14:56:25 Created a new Deployment called "argo-argocd-repo-server" in argocd
+2024/05/14 14:56:25 Created a new Deployment called "argo-argocd-server" in argocd
+2024/05/14 14:56:25 Created a new Deployment called "argo-argocd-dex-server" in argocd
+2024/05/14 14:56:25 Created a new Deployment called "argo-argocd-redis" in argocd
+2024/05/14 14:56:25 Created a new StatefulSet called "argo-argocd-application-controller" in argocd
+2024/05/14 14:56:25 Installed Chart from path: argo in namespace: argocd
+2024/05/14 14:56:25 &{2024-05-14 14:56:24.092763 -0700 PDT m=+2.207763543 2024-05-14 14:56:24.092763 -0700 PDT m=+2.207763543 0001-01-01 00:00:00 +0000 UTC Install complete deployed In order to access the server UI you have the following options:
+
+1. kubectl port-forward service/argo-argocd-server -n argocd 8080:443
+
+    and then open the browser on http://localhost:8080 and accept the certificate
+
+2. enable ingress in the values file `server.ingress.enabled` and either
+      - Add the annotation for ssl passthrough: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#option-1-ssl-passthrough
+      - Set the `configs.params."server.insecure"` in the values file and terminate SSL at your ingress: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#option-2-multiple-ingress-objects-and-hosts
+
+
+After reaching the UI the first time you can login with username: admin and the random password generated during the installation. You can find the password by running:
+
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+
+(You should delete the initial secret afterwards as suggested by the Getting Started Guide: https://argo-cd.readthedocs.io/en/stable/getting_started/#4-login-using-the-cli)
+ map[]}
+2024/05/14 14:58:13 called the install argocd command function
+2024/05/14 14:58:17 creating 1 resource(s)
+2024/05/14 14:58:17 checking 49 resources for changes
+2024/05/14 14:58:17 Created a new ServiceAccount called "argocd-application-controller" in argocd
+2024/05/14 14:58:17 Created a new ServiceAccount called "argocd-applicationset-controller" in argocd
+2024/05/14 14:58:17 Created a new ServiceAccount called "argocd-notifications-controller" in argocd
+2024/05/14 14:58:17 Created a new ServiceAccount called "argo-argocd-repo-server" in argocd
+2024/05/14 14:58:17 Created a new ServiceAccount called "argocd-server" in argocd
+2024/05/14 14:58:17 Created a new ServiceAccount called "argocd-dex-server" in argocd
+2024/05/14 14:58:17 Created a new Secret called "argocd-notifications-secret" in argocd
+2024/05/14 14:58:17 Created a new Secret called "argocd-secret" in argocd
+2024/05/14 14:58:17 Created a new ConfigMap called "argocd-cm" in argocd
+2024/05/14 14:58:17 Created a new ConfigMap called "argocd-cmd-params-cm" in argocd
+2024/05/14 14:58:17 Created a new ConfigMap called "argocd-gpg-keys-cm" in argocd
+2024/05/14 14:58:17 Created a new ConfigMap called "argocd-notifications-cm" in argocd
+2024/05/14 14:58:17 Created a new ConfigMap called "argocd-rbac-cm" in argocd
+2024/05/14 14:58:17 Created a new ConfigMap called "argocd-ssh-known-hosts-cm" in argocd
+2024/05/14 14:58:17 Created a new ConfigMap called "argocd-tls-certs-cm" in argocd
+2024/05/14 14:58:17 Created a new ConfigMap called "argo-argocd-redis-health-configmap" in argocd
+2024/05/14 14:58:17 Looks like there are no changes for CustomResourceDefinition "applications.argoproj.io"
+2024/05/14 14:58:17 Looks like there are no changes for CustomResourceDefinition "applicationsets.argoproj.io"
+2024/05/14 14:58:17 Looks like there are no changes for CustomResourceDefinition "appprojects.argoproj.io"
+2024/05/14 14:58:17 Created a new ClusterRole called "argo-argocd-application-controller" in 
+2024/05/14 14:58:17 Created a new ClusterRole called "argo-argocd-notifications-controller" in 
+2024/05/14 14:58:17 Created a new ClusterRole called "argo-argocd-server" in 
+2024/05/14 14:58:17 Created a new ClusterRoleBinding called "argo-argocd-application-controller" in 
+2024/05/14 14:58:17 Created a new ClusterRoleBinding called "argo-argocd-notifications-controller" in 
+2024/05/14 14:58:17 Created a new ClusterRoleBinding called "argo-argocd-server" in 
+2024/05/14 14:58:17 Created a new Role called "argo-argocd-application-controller" in argocd
+2024/05/14 14:58:17 Created a new Role called "argo-argocd-applicationset-controller" in argocd
+2024/05/14 14:58:17 Created a new Role called "argo-argocd-notifications-controller" in argocd
+2024/05/14 14:58:17 Created a new Role called "argo-argocd-repo-server" in argocd
+2024/05/14 14:58:17 Created a new Role called "argo-argocd-server" in argocd
+2024/05/14 14:58:17 Created a new Role called "argo-argocd-dex-server" in argocd
+2024/05/14 14:58:17 Created a new RoleBinding called "argo-argocd-application-controller" in argocd
+2024/05/14 14:58:17 Created a new RoleBinding called "argo-argocd-applicationset-controller" in argocd
+2024/05/14 14:58:17 Created a new RoleBinding called "argo-argocd-notifications-controller" in argocd
+2024/05/14 14:58:17 Created a new RoleBinding called "argo-argocd-repo-server" in argocd
+2024/05/14 14:58:17 Created a new RoleBinding called "argo-argocd-server" in argocd
+2024/05/14 14:58:17 Created a new RoleBinding called "argo-argocd-dex-server" in argocd
+2024/05/14 14:58:17 Created a new Service called "argo-argocd-applicationset-controller" in argocd
+2024/05/14 14:58:17 Created a new Service called "argo-argocd-repo-server" in argocd
+2024/05/14 14:58:17 Created a new Service called "argo-argocd-server" in argocd
+2024/05/14 14:58:17 Created a new Service called "argo-argocd-dex-server" in argocd
+2024/05/14 14:58:17 Created a new Service called "argo-argocd-redis" in argocd
+2024/05/14 14:58:17 Created a new Deployment called "argo-argocd-applicationset-controller" in argocd
+2024/05/14 14:58:17 Created a new Deployment called "argo-argocd-notifications-controller" in argocd
+2024/05/14 14:58:17 Created a new Deployment called "argo-argocd-repo-server" in argocd
+2024/05/14 14:58:17 Created a new Deployment called "argo-argocd-server" in argocd
+2024/05/14 14:58:17 Created a new Deployment called "argo-argocd-dex-server" in argocd
+2024/05/14 14:58:18 Created a new Deployment called "argo-argocd-redis" in argocd
+2024/05/14 14:58:18 Created a new StatefulSet called "argo-argocd-application-controller" in argocd
+2024/05/14 14:58:18 Installed Chart from path: argo in namespace: argocd
+2024/05/14 14:58:18 &{2024-05-14 14:58:16.265631 -0700 PDT m=+2.949255501 2024-05-14 14:58:16.265631 -0700 PDT m=+2.949255501 0001-01-01 00:00:00 +0000 UTC Install complete deployed In order to access the server UI you have the following options:
+
+1. kubectl port-forward service/argo-argocd-server -n argocd 8080:443
+
+    and then open the browser on http://localhost:8080 and accept the certificate
+
+2. enable ingress in the values file `server.ingress.enabled` and either
+      - Add the annotation for ssl passthrough: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#option-1-ssl-passthrough
+      - Set the `configs.params."server.insecure"` in the values file and terminate SSL at your ingress: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#option-2-multiple-ingress-objects-and-hosts
+
+
+After reaching the UI the first time you can login with username: admin and the random password generated during the installation. You can find the password by running:
+
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+
+(You should delete the initial secret afterwards as suggested by the Getting Started Guide: https://argo-cd.readthedocs.io/en/stable/getting_started/#4-login-using-the-cli)
+ map[]}
+2024/05/14 16:32:15 called the install argocd command function
+2024/05/14 16:32:19 error installing the chart. Unable to continue with install: CustomResourceDefinition "applications.argoproj.io" in namespace "" exists and cannot be imported into the current release: invalid ownership metadata; annotation validation error: key "meta.helm.sh/release-name" must equal "argocd": current value is "argo"
+2024/05/14 16:32:57 called the install argocd command function
+2024/05/14 16:33:00 creating 1 resource(s)
+2024/05/14 16:33:00 creating 49 resource(s)
+2024/05/14 16:33:01 Installed Chart from path: argocd in namespace: argocd
+2024/05/14 16:33:01 &{2024-05-14 16:32:59.588676 -0700 PDT m=+2.257638251 2024-05-14 16:32:59.588676 -0700 PDT m=+2.257638251 0001-01-01 00:00:00 +0000 UTC Install complete deployed In order to access the server UI you have the following options:
+
+1. kubectl port-forward service/argocd-server -n argocd 8080:443
+
+    and then open the browser on http://localhost:8080 and accept the certificate
+
+2. enable ingress in the values file `server.ingress.enabled` and either
+      - Add the annotation for ssl passthrough: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#option-1-ssl-passthrough
+      - Set the `configs.params."server.insecure"` in the values file and terminate SSL at your ingress: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#option-2-multiple-ingress-objects-and-hosts
+
+
+After reaching the UI the first time you can login with username: admin and the random password generated during the installation. You can find the password by running:
+
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+
+(You should delete the initial secret afterwards as suggested by the Getting Started Guide: https://argo-cd.readthedocs.io/en/stable/getting_started/#4-login-using-the-cli)
+ map[]}
+2024/05/14 16:47:05 called the install argocd command function
+2024/05/14 16:47:09 Installed Chart from path: argocd in namespace: argocd
+2024/05/14 16:47:09 &{2024-05-14 16:47:08.264329 -0700 PDT m=+2.974921334 2024-05-14 16:47:08.264329 -0700 PDT m=+2.974921334 0001-01-01 00:00:00 +0000 UTC Dry run complete pending-install In order to access the server UI you have the following options:
+
+1. kubectl port-forward service/argocd-server -n argocd 8080:443
+
+    and then open the browser on http://localhost:8080 and accept the certificate
+
+2. enable ingress in the values file `server.ingress.enabled` and either
+      - Add the annotation for ssl passthrough: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#option-1-ssl-passthrough
+      - Set the `configs.params."server.insecure"` in the values file and terminate SSL at your ingress: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#option-2-multiple-ingress-objects-and-hosts
+
+
+After reaching the UI the first time you can login with username: admin and the random password generated during the installation. You can find the password by running:
+
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+
+(You should delete the initial secret afterwards as suggested by the Getting Started Guide: https://argo-cd.readthedocs.io/en/stable/getting_started/#4-login-using-the-cli)
+ map[]}

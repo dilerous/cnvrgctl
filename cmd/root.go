@@ -1,27 +1,33 @@
 /*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 NAME HERE BRADLEY.SOPER@CNVRG.IO
 */
 package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+// TODO: roll cfgFile into the KubernetesAPI struct
 var (
-	cfgFile string
-	//clientset *kubernetes.Clientset
+	cfgFile       string
+	WarningLogger *log.Logger
+	InfoLogger    *log.Logger
+	ErrorLogger   *log.Logger
 )
 
 type KubernetesAPI struct {
-	Suffix string
-	Client kubernetes.Interface
+	Suffix  string
+	Client  kubernetes.Interface
+	Dynamic dynamic.Interface
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -69,6 +75,12 @@ func init() {
 
 	// Persistent flag for setting the context
 	rootCmd.PersistentFlags().StringP("context", "", "", "The name of the kubeconfig context to use")
+
+	// Start the logging for the cli
+	err := setLogger()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "error configuring the logger.")
+	}
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -143,6 +155,11 @@ func connectToK8s() (*KubernetesAPI, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error creating kubernetes client, exiting. %w", err)
 	}
+
+	// create the dynamic client
+	//TODO understand why this is created
+	client.Dynamic = dynamic.NewForConfigOrDie(config)
+
 	return &client, nil
 }
 
@@ -162,4 +179,19 @@ func buildConfigWithContextFromFlags(context string, kubeconfigPath string) (*re
 		&clientcmd.ConfigOverrides{
 			CurrentContext: context,
 		}).ClientConfig()
+}
+
+func setLogger() error {
+	LOG_FILE_PATH := "cnvrgctl-logs.txt"
+
+	file, err := os.OpenFile(LOG_FILE_PATH, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal(err)
+		return fmt.Errorf("there was an issue creating the log file. %v", err)
+	}
+	log.SetOutput(file)
+	InfoLogger = log.New(file, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+	WarningLogger = log.New(file, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
+	ErrorLogger = log.New(file, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+	return nil
 }

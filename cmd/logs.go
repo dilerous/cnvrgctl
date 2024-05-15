@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -23,22 +24,27 @@ import (
 // logsCmd represents the logs command
 var logsCmd = &cobra.Command{
 	Use:   "logs",
-	Short: "The command will grab logs from all running pods in the namespace defined",
+	Short: "Pull logs from all running pods in the namespace defined",
 	Long: `Capture the logs for every container in a specified namespace and save the 
 files to ./<log-dir>/<pod-name>.txt. 
+
+Usage:
+  cnvrgctl logs [flags]
 	
 Examples:
   # Gather all container logs in the cnvrg namespace.
   cnvrgctl -n cnvrg logs 
 
   # Gather all container logs in the cnvrg namespace and select the last 10 lines.
-  cnvrgctl -n cnvrg logs -l 10
+  cnvrgctl -n cnvrg logs -l=10
 
-  # Gather all container logs and tar the text files into a tar.gz
-  cnvrgctl -n cnvrg logs --tar`,
+  # Gather all container logs and tar the log files into a tar.gz
+  cnvrgctl -n cnvrg logs --tar
+  
+  # Gather all container logs and specify the directory the files are saved to.
+  cnvrgctl -n cnvrg logs --log-dir=my-log-folder `,
 	Run: func(cmd *cobra.Command, args []string) {
-		//fmt.Println("logs called")
-		//fmt.Fprintf(cmd.OutOrStdout(), "logs called \n")
+		log.Println("called the logs command.")
 
 		// Pass a namespace to the logs command
 		ns, _ := cmd.Flags().GetString("namespace")
@@ -90,8 +96,8 @@ func init() {
 	// Add the flag -n --number to select the number of logs to grab
 	logsCmd.Flags().IntP("lines", "l", 100, "Define the number of lines in the log to return")
 
-	// Persistent flag to define the log directory
-	logsCmd.PersistentFlags().StringP("log-dir", "", "./logs", "Define the directory logs are saved to.")
+	// Add the flag --log-dir to define the log directory
+	logsCmd.PersistentFlags().StringP("log-dir", "", "./logs", "Define the directory logs are saved too.")
 }
 
 func getPods(ns string, clientset kubernetes.Interface) ([]corev1.Pod, error) {
@@ -222,6 +228,5 @@ func createTarGz(source string, target string) error {
 
 		return nil
 	})
-
 	return err
 }
