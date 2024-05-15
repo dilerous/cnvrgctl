@@ -28,6 +28,7 @@ type KubernetesAPI struct {
 	Suffix  string
 	Client  kubernetes.Interface
 	Dynamic dynamic.Interface
+	Config  *rest.Config
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -109,6 +110,9 @@ func initConfig() {
 
 func connectToK8s() (*KubernetesAPI, error) {
 
+	// Create Kubernetes client variable from the struct KubernetesAPI
+	client := KubernetesAPI{}
+
 	kubeContextFlag, err := rootCmd.Flags().GetString("context")
 	if err != nil {
 		return nil, fmt.Errorf("error reading the kubeconfig context. %w", err)
@@ -133,6 +137,8 @@ func connectToK8s() (*KubernetesAPI, error) {
 
 	// Use the current context in kubeconfig
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+	client.Config = config
+
 	if err != nil {
 		// If building config fails, try in-cluster config
 		config, err = rest.InClusterConfig()
@@ -149,8 +155,6 @@ func connectToK8s() (*KubernetesAPI, error) {
 		}
 	}
 
-	// Create Kubernetes client
-	client := KubernetesAPI{}
 	client.Client, err = kubernetes.NewForConfig(config)
 	if err != nil {
 		return nil, fmt.Errorf("error creating kubernetes client, exiting. %w", err)
@@ -171,7 +175,7 @@ func homeDir() string {
 	return os.Getenv("USERPROFILE") // Windows
 }
 
-// Build the clientconfig when a context is specified.
+// Build the client config when a context is specified.
 func buildConfigWithContextFromFlags(context string, kubeconfigPath string) (*rest.Config, error) {
 	fmt.Println(kubeconfigPath)
 	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
