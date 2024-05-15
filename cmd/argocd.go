@@ -21,14 +21,17 @@ import (
 	"helm.sh/helm/v3/pkg/cli"
 )
 
-var Scheme = runtime.NewScheme()
-var settings = cli.New()
+var (
+	Scheme   = runtime.NewScheme()
+	settings = cli.New()
+)
 
 // argocdCmd represents the argocd command
 var argocdCmd = &cobra.Command{
 	Use:   "argocd",
 	Short: "Installs the gitops tool, argocd",
-	Long: `Install the gitops tool argocd as a helm release.  
+	Long: `Install the gitops tool argocd as a helm release. The deployment
+will use the default ingress controller for external access.   
 
 Usage:
   cnvrgctl install argocd [flags]
@@ -40,8 +43,11 @@ Examples:
 # Perform a dry run install of argocd.
   cnvrgctl -n argocd install argocd --dry-run
   
-# Install argocd and specify a custom chart URL .
-  cnvrgctl -n argocd install argocd --repo  https://github.com/argo-helm`,
+# Install argocd and specify a custom chart URL.
+  cnvrgctl -n argocd install argocd --repo  https://github.com/argo-helm
+
+# Install with a user specific domain.
+  cnvrgctl -n argocd install argocd -d argocd.dilerous.cloud`,
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("called the install argocd command function")
 
@@ -51,14 +57,14 @@ Examples:
 		// Flag to set the chart repo url
 		chartURLFlag, _ := cmd.Flags().GetString("repo")
 
-		// Flag to set the helm release name for the install
+		// Flag to set the chart name for the install
 		chartNameFlag, _ := cmd.Flags().GetString("chart-name")
 
 		// Flag to set the helm release name for the install
 		releaseNameFlag, _ := cmd.Flags().GetString("release-name")
 
-		//TODO: add ability to define values file
-		//ADDED under string heading of values
+		// Flag to set the domain of the argocd deployment
+		domainFlag, _ := cmd.Flags().GetString("domain")
 
 		// Flag to set if dry-run should be ran for the install
 		dryRun, _ := cmd.Flags().GetBool("dry-run")
@@ -70,8 +76,10 @@ Examples:
 			log.Fatalf("error loading the chart, check the url and path. %v", err)
 		}
 
+		vals, _ := createValues(domainFlag)
+
 		// Install the helm chart, specifiy namespace and the release name for the install
-		err = deployHelmChart(ns, chart, releaseNameFlag, dryRun)
+		err = deployHelmChart(ns, chart, releaseNameFlag, dryRun, vals)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error installing the helm release, check the logs. %v", err)
 			log.Fatalf("error installing the helm release, check the logs. %v", err)
@@ -94,11 +102,14 @@ func init() {
 	// flag to define the values file for the install
 	argocdCmd.PersistentFlags().StringP("values", "f", "", "specify values in a YAML file or a URL.")
 
+	// flag to define the argocd domain for install
+	argocdCmd.PersistentFlags().StringP("domain", "d", "argocd.example.com", "define the domain for the argocd deployment.")
+
 	// Adds the flag -t --tar to the logs command this is local
 	argocdCmd.Flags().BoolP("dry-run", "", false, "Perform a dry run of the install of argocd.")
 }
 
-func deployHelmChart(ns string, c *chart.Chart, release string, dryRun bool) error {
+func deployHelmChart(ns string, c *chart.Chart, release string, dryRun bool, vals map[string]interface{}) error {
 
 	// Define namespace, release name and chart to deploy the helm release
 	var (
@@ -146,18 +157,13 @@ func deployHelmChart(ns string, c *chart.Chart, release string, dryRun bool) err
 	}
 
 	//TODO: add ability to upgrade
+	//TODO: add flag to specify upgrade
 	upgradeClient := action.NewUpgrade(actionConfig)
 	upgradeClient.Install = true
 	upgradeClient.Namespace = namespace
 
-	// get the values for the helm install
-	vals, err := createValues()
-	if err != nil {
-		log.Printf("error getting the values. %v", err)
-		return fmt.Errorf("error getting the values. %w", err)
-	}
-
 	// install the chart here
+	fmt.Println("Installing ArgoCD please wait ...")
 	rel, err := client.Run(chart, vals)
 	if err != nil {
 		log.Printf("error installing the chart. %v", err)
@@ -168,7 +174,7 @@ func deployHelmChart(ns string, c *chart.Chart, release string, dryRun bool) err
 	fmt.Printf("installed Chart from path: %s in namespace: %s\n", rel.Name, rel.Namespace)
 	log.Printf("installed Chart from path: %s in namespace: %s\n", rel.Name, rel.Namespace)
 
-	// this will confirm the values set during installation
+	// this will print the release info after the install
 	fmt.Println(rel.Info)
 	log.Println(rel.Info)
 	return nil
@@ -200,16 +206,30 @@ func loadChart(url string, chartName string) (*chart.Chart, error) {
 	return chart, nil
 }
 
-func createValues() (map[string]interface{}, error) {
+func createValues(domain string) (map[string]interface{}, error) {
 
 	// define values
+
 	vals := map[string]interface{}{
-		"redis": map[string]interface{}{
-			"sentinel": map[string]interface{}{
-				"masterName": "BigMaster",
-				"pass":       "random",
-				"addr":       "localhost",
-				"port":       "26379",
+		"global": map[string]interface{}{
+			"domain": domain,
+		},
+
+		"server": map[string]interface{}{
+			"ingress": map[string]interface{}{
+				"enabled": true,
+				"annotations": map[string]interface{}{
+					"nginx.ingress.kubernetes.io/backend-protocol":   "HTTPS",
+					"nginx.ingress.kubernetes.io/force-ssl-redirect": "true",
+					"nginx.ingress.kubernetes.io/ssl-passthrough":    "true",
+				},
+			},
+		},
+		"configs": map[string]interface{}{
+			"params": map[string]interface{}{
+				"server": map[string]interface{}{
+					"insecure": true,
+				},
 			},
 		},
 	}
@@ -226,13 +246,13 @@ func checkNamespaceExists(ns string, clientset kubernetes.Interface) (bool, erro
 	_, err := clientset.CoreV1().Namespaces().Get(context.Background(), namespace, v1.GetOptions{})
 	if err != nil {
 		// If the namespace does not exist, an error will be returned
-		fmt.Printf("the namespace doesn't exist %v.\n", namespace)
-		log.Printf("the namespace doesn't exist %v.\n", namespace)
+		fmt.Printf("the namespace %v, doesn't exist.\n", namespace)
+		log.Printf("the namespace %v, doesn't exist.\n", namespace)
 		return false, nil
 	} else {
 		// If no error is returned, the namespace exists
-		fmt.Printf("Namespace %s exists\n", namespace)
-		log.Printf("Namespace %s exists\n", namespace)
+		fmt.Printf("namespace %s exists\n", namespace)
+		log.Printf("namespace %s exists\n", namespace)
 		return true, nil
 	}
 }
