@@ -522,3 +522,15 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.pas
 
 (You should delete the initial secret afterwards as suggested by the Getting Started Guide: https://argo-cd.readthedocs.io/en/stable/getting_started/#4-login-using-the-cli)
  map[]}
+2024/05/15 19:48:06 error executing the backup, check the logs. could not get the first pod in the list. %!w(<nil>)
+2024/05/15 19:49:33 error executing the backup, check the logs. could not get the first pod in the list. %!w(<nil>)
+2024/05/15 19:51:26 error executing the backup, check the logs. could not get the first pod in the list. %!w(<nil>)
+2024/05/16 09:30:27 called the migrate backup command function
+2024/05/16 09:30:27 error scaling the deployment. there was an error getting the deployment &Deployment{ObjectMeta:{      0 0001-01-01 00:00:00 +0000 UTC <nil> <nil> map[] map[] [] [] []},Spec:DeploymentSpec{Replicas:nil,Selector:nil,Template:{{      0 0001-01-01 00:00:00 +0000 UTC <nil> <nil> map[] map[] [] [] []} {[] [] [] []  <nil> <nil>  map[]   <nil>  false false false <nil> nil []   nil  [] []  <nil> nil [] <nil> <nil> <nil> map[] [] <nil> nil <nil> [] []}},Strategy:DeploymentStrategy{Type:,RollingUpdate:nil,},MinReadySeconds:0,RevisionHistoryLimit:nil,Paused:false,ProgressDeadlineSeconds:nil,},Status:DeploymentStatus{ObservedGeneration:0,Replicas:0,UpdatedReplicas:0,AvailableReplicas:0,UnavailableReplicas:0,Conditions:[]DeploymentCondition{},ReadyReplicas:0,CollisionCount:nil,},}. deployments.apps "app" not found
+2024/05/16 09:32:32 called the migrate backup command function
+2024/05/16 09:32:33 error scaling the deployment. there was an error getting the number of replicas app. deployments/scale.apps "app" not found
+2024/05/16 09:33:11 called the migrate backup command function
+2024/05/16 09:33:11 error scaling the deployment. there was an error getting the number of replicas app. deployments/scale.apps "app" not found
+2024/05/16 10:14:14 called the migrate backup command function
+2024/05/16 10:14:14 error scaling the deployment. there was an error getting the number of replicas app. deployments/scale.apps "app" not found
+2024/05/16 10:17:31 called the migrate backup command function
