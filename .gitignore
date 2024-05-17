@@ -1,4 +1,5 @@
 logs/
+cnvrg-db-backup.sql
 cnvrgctl-logs.txt
 /bin/cnvrgctl
 cmd/logs

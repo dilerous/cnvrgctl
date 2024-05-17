@@ -4,8 +4,10 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"os"
 
@@ -69,6 +71,14 @@ Examples:
 			log.Fatalf("error executing the backup, check the logs. %v", err)
 		}
 
+		// copy the postgres backup to the local machine
+		fmt.Println("running the copyDBLocally function")
+		err = copyDBLocally(api, nsFlag, podName)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error copying the database file. %v", err)
+			log.Fatalf("error copying the database file. %v", err)
+		}
+
 	},
 }
 
@@ -83,11 +93,12 @@ func init() {
 
 }
 
+// scales the following deployments "app", "sidekiq", "systemkiq", "searchkiq", "cnvrg-operator" in the namespace specified
 func scaleDeploy(api *KubernetesAPI, nsFlag string) error {
 
 	var (
-		clientset = api.Client
-		// Set the deployment name and namespace
+		// Set client, deployment names and namespace
+		clientset   = api.Client
 		deployNames = []string{"app", "sidekiq", "systemkiq", "searchkiq", "cnvrg-operator"}
 		namespace   = nsFlag
 	)
@@ -95,11 +106,14 @@ func scaleDeploy(api *KubernetesAPI, nsFlag string) error {
 	// Get the deployment
 	for _, deployName := range deployNames {
 
+		// Get the current number of replicas for the deployment
 		s, err := clientset.AppsV1().Deployments(nsFlag).GetScale(context.TODO(), deployName, v1.GetOptions{})
 		if err != nil {
 			fmt.Printf("there was an error getting the number of replicas for deployment %v, check the namespace specified is correct.\n %v", deployName, err)
 			return fmt.Errorf("there was an error getting the number of replicas for deployment %v, check the namespace specified is correct. %w", deployName, err)
 		}
+
+		// create a v1.Scale object and set the replicas to 0
 		sc := *s
 		sc.Spec.Replicas = 0
 
@@ -107,12 +121,15 @@ func scaleDeploy(api *KubernetesAPI, nsFlag string) error {
 		scale, err := clientset.AppsV1().Deployments(namespace).UpdateScale(context.TODO(), deployName, &sc, v1.UpdateOptions{})
 		if err != nil {
 			fmt.Printf("there was an issue scaling the deployment %v.\n%v", deployName, err)
-
 			return fmt.Errorf("there was an issue scaling the deployment %v. %w", deployName, err)
-
 		}
-		fmt.Printf("Scaled deployment %s to 0 replicas.\n%v", scale, deployName)
+
+		// Print to screen the deployments scaled to 0
+		fmt.Printf("scaled deployment %s to 0 replicas.\n", scale.Name)
+		//TODO: add check for num of replicas = 0
+
 	}
+
 	return nil
 }
 
@@ -161,7 +178,7 @@ func executeBackup(api *KubernetesAPI, pod string, nsFlag string) error {
 	command := []string{
 		"sh",
 		"-c",
-		"echo $HOME; ls -l && echo hello",
+		"export PGPASSWORD=$POSTGRESQL_PASSWORD; echo $POSTGRESQL_PASSWORD; pg_dump -h postgres -U cnvrg -d cnvrg_production -Fc > cnvrg-db-backup.sql",
 	}
 
 	// rest request to send command to pod
@@ -182,7 +199,7 @@ func executeBackup(api *KubernetesAPI, pod string, nsFlag string) error {
 	// Execute the command in the pod
 	executor, err := remotecommand.NewSPDYExecutor(api.Config, "POST", req.URL())
 	if err != nil {
-		fmt.Printf("here was an error executing the commands in the pod. %v\n", err)
+		log.Printf("here was an error executing the commands in the pod. %v\n", err)
 		return fmt.Errorf("here was an error executing the commands in the pod. %w", err)
 	}
 
@@ -198,17 +215,78 @@ func executeBackup(api *KubernetesAPI, pod string, nsFlag string) error {
 		Tty:    false,
 	})
 	if err != nil {
-		fmt.Printf("there was an error streaming the output of the command to stdout, stderr. %v\n", err)
+		log.Printf("there was an error streaming the output of the command to stdout, stderr. %v\n", err)
 		return fmt.Errorf("there was an error streaming the output of the command to stdout, stderr. %w", err)
 	}
+
+	//TODO add in a check if the file exits here cnvrg-db-backup.sql
+	fmt.Println("Backup successful!")
 	return nil
 }
 
-// confirm the deployment exists
-//deploymentName, err := clientset.AppsV1().Deployments(namespace).Get(context.TODO(), deployName, v1.GetOptions{})
-//if err != nil {
-//	fmt.Printf("there was an error getting the deployment %v.\n%v", deploymentName, err)
-//	return fmt.Errorf("there was an error getting the deployment %v. %w", deploymentName, err)
-//}
+func copyDBLocally(api *KubernetesAPI, nsFlag string, pod string) error {
 
-// get the current replica value so we can scale down if needed
+	//TODO: add flag to specify location of file
+	var ( // Set the pod and namespace
+		podName    = pod
+		namespace  = nsFlag
+		filePath   = "./"
+		backupFile = "cnvrg-db-backup.sql"
+		clientset  = api.Client
+		command    = []string{"cat", backupFile}
+		config     = api.Config
+		stdout     = bytes.Buffer
+		stderr     = bytes.Buffer
+	)
+
+	// Create a REST client
+	log.Println("Creating the rest client call")
+	req := clientset.CoreV1().RESTClient().
+		Post().
+		Resource("pods").
+		Name(podName).
+		Namespace(namespace).
+		SubResource("exec").
+		VersionedParams(&corev1.PodExecOptions{
+			Command: command,
+			Stdin:   false,
+			Stdout:  true,
+			Stderr:  true,
+			TTY:     false,
+		}, scheme.ParameterCodec)
+
+	exec, err := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
+	if err != nil {
+		log.Fatalf("error %s\n", err)
+		return err
+	}
+
+	exec.StreamWithContext(context.TODO(), remotecommand.StreamOptions{
+		Stdin:  nil,
+		Stdout: &stdout,
+		Stderr: &stderr,
+	})
+
+	// Create a local file to write to
+	localFile, err := os.Create(filePath + backupFile)
+	if err != nil {
+		log.Fatalf("error creating local file. %v\n", err)
+		return fmt.Errorf("error creating local file. %w", err)
+	}
+	defer localFile.Close()
+
+	// open the file that was just created
+	file, err := os.OpenFile(filePath+backupFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatalf("os.OpenFile() failed with %s\n", err)
+	}
+	defer file.Close()
+
+	// copy the stream out put from the cat command to the file.
+	_, err = io.Copy(file, &stdout)
+	if err != nil {
+		log.Fatalf("io.Copy() failed with %s\n", err)
+	}
+
+	return nil
+}
