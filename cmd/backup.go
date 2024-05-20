@@ -10,7 +10,14 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
+	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -18,6 +25,15 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/remotecommand"
 )
+
+type ObjectStorage struct {
+	Key        string
+	SecretKey  string
+	Region     string
+	Endpoint   string
+	Type       string
+	BucketName string
+}
 
 // backupCmd represents the backup command
 var backupCmd = &cobra.Command{
@@ -45,6 +61,9 @@ Examples:
 		// grab the namespace from the -n flag if not specified default is used
 		labelFlag, _ := cmd.Flags().GetString("label")
 
+		// grab the namespace from the -n flag if not specified default is used
+		s3SecretName, _ := cmd.Flags().GetString("secret-name")
+
 		// connect to kubernetes and define clientset and rest client
 		api, err := connectToK8s()
 		if err != nil {
@@ -55,7 +74,7 @@ Examples:
 		err = scaleDeploy(api, nsFlag)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error scaling the deployment. %v", err)
-			log.Fatalf("error scaling the deployment. %v", err)
+			log.Fatalf("error scaling the deployment. %v\n", err)
 		}
 
 		podName, err := getDeployPod(api, targetFlag, nsFlag, labelFlag)
@@ -68,7 +87,7 @@ Examples:
 		err = executeBackup(api, podName, nsFlag)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error executing the backup, check the logs. %v", err)
-			log.Fatalf("error executing the backup, check the logs. %v", err)
+			log.Fatalf("error executing the backup, check the logs. %v\n", err)
 		}
 
 		// copy the postgres backup to the local machine
@@ -76,9 +95,28 @@ Examples:
 		err = copyDBLocally(api, nsFlag, podName)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error copying the database file. %v", err)
-			log.Fatalf("error copying the database file. %v", err)
+			log.Fatalf("error copying the database file. %v\n", err)
 		}
 
+		objectData, err := getObjectData(api, s3SecretName, nsFlag)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "failed to get the S3 secret. %v", err)
+			log.Fatalf("failed to get the S3 secret. %v\n", err)
+		}
+
+		if objectData.Type == "minio" {
+			err := connectToMinio(objectData)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "failed to get the S3 secret. %v", err)
+				log.Fatalf("failed to get the S3 secret. %v\n", err)
+			}
+		} else {
+			err = connectToS3(objectData)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "failed to connect to the s3 bucket. %v", err)
+				log.Fatalf("failed to connect to the s3 bucket. %v", err)
+			}
+		}
 	},
 }
 
@@ -90,6 +128,9 @@ func init() {
 
 	// flag to define the app label key
 	backupCmd.PersistentFlags().StringP("label", "l", "app", "modify the key of the deployment label. example: app.kubernetes.io/name")
+
+	// flag to define the release name
+	backupCmd.PersistentFlags().StringP("secret-name", "", "cp-object-storage", "define the name of the secret for the S3 bucket.")
 
 }
 
@@ -129,7 +170,9 @@ func scaleDeploy(api *KubernetesAPI, nsFlag string) error {
 		//TODO: add check for num of replicas = 0
 
 	}
-
+	//TODO: add a check if all replicas = 0
+	fmt.Println("waiting for pods to finish terminating...")
+	time.Sleep(10 * time.Second)
 	return nil
 }
 
@@ -199,7 +242,7 @@ func executeBackup(api *KubernetesAPI, pod string, nsFlag string) error {
 	// Execute the command in the pod
 	executor, err := remotecommand.NewSPDYExecutor(api.Config, "POST", req.URL())
 	if err != nil {
-		log.Printf("here was an error executing the commands in the pod. %v\n", err)
+		log.Fatalf("here was an error executing the commands in the pod. %v\n", err)
 		return fmt.Errorf("here was an error executing the commands in the pod. %w", err)
 	}
 
@@ -215,7 +258,7 @@ func executeBackup(api *KubernetesAPI, pod string, nsFlag string) error {
 		Tty:    false,
 	})
 	if err != nil {
-		log.Printf("there was an error streaming the output of the command to stdout, stderr. %v\n", err)
+		log.Fatalf("there was an error streaming the output of the command to stdout, stderr. %v\n", err)
 		return fmt.Errorf("there was an error streaming the output of the command to stdout, stderr. %w", err)
 	}
 
@@ -235,8 +278,6 @@ func copyDBLocally(api *KubernetesAPI, nsFlag string, pod string) error {
 		clientset  = api.Client
 		command    = []string{"cat", backupFile}
 		config     = api.Config
-		stdout     = bytes.Buffer
-		stderr     = bytes.Buffer
 	)
 
 	// Create a REST client
@@ -255,12 +296,15 @@ func copyDBLocally(api *KubernetesAPI, nsFlag string, pod string) error {
 			TTY:     false,
 		}, scheme.ParameterCodec)
 
+	// execute the command
 	exec, err := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
 	if err != nil {
-		log.Fatalf("error %s\n", err)
-		return err
+		log.Fatalf("error executing the remote command. %v\n", err)
+		return fmt.Errorf("error execuuting the remote command. %w", err)
 	}
 
+	// set the variables to type byte and stream the output to those variables
+	var stdout, stderr bytes.Buffer
 	exec.StreamWithContext(context.TODO(), remotecommand.StreamOptions{
 		Stdin:  nil,
 		Stdout: &stdout,
@@ -278,15 +322,144 @@ func copyDBLocally(api *KubernetesAPI, nsFlag string, pod string) error {
 	// open the file that was just created
 	file, err := os.OpenFile(filePath+backupFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Fatalf("os.OpenFile() failed with %s\n", err)
+		log.Fatalf("opening the file failed. %s\n", err)
+		return fmt.Errorf("opening the file failed. %w", err)
 	}
 	defer file.Close()
 
-	// copy the stream out put from the cat command to the file.
+	// copy the stream output from the cat command to the file.
 	_, err = io.Copy(file, &stdout)
 	if err != nil {
-		log.Fatalf("io.Copy() failed with %s\n", err)
+		log.Fatalf("the copy failed. %v", err)
+		return fmt.Errorf("the copy failed. %w", err)
 	}
 
 	return nil
+}
+
+func connectToS3(o *ObjectStorage) error {
+
+	// Initialize a session that the SDK will use to load
+	// credentials from the shared credentials file ~/.aws/credentials
+	sess, err := session.NewSession(&aws.Config{Region: aws.String(o.Region)}, nil)
+	if err != nil {
+		log.Fatal(err)
+		return fmt.Errorf("the copy failed. %w", err)
+	}
+
+	// Create S3 client
+	s3Client := s3.New(sess)
+
+	// List buckets
+	buckets, err := s3Client.ListBuckets(&s3.ListBucketsInput{})
+	if err != nil {
+		log.Fatalf("error listing the buckets, check your credentials. %v", err)
+		return fmt.Errorf("the copy failed. %w", err)
+	}
+
+	log.Println("Buckets:")
+	for _, bucket := range buckets.Buckets {
+		log.Println(*bucket.Name)
+	}
+
+	// Get object from bucket
+	obj, err := s3Client.GetObject(&s3.GetObjectInput{
+		Bucket: aws.String(o.BucketName),
+		Key:    aws.String(o.Key),
+	})
+	if err != nil {
+		log.Fatal(err)
+		return fmt.Errorf("the copy failed. %w", err)
+	}
+
+	log.Println("Object:")
+	log.Println(obj)
+	return nil
+}
+
+func connectToMinio(o *ObjectStorage) error {
+	// Initialize a new MinIO client
+	useSSL := false
+
+	u := o.Endpoint
+	uWithoutHttp := strings.Replace(u, "http://", "", 1)
+	fmt.Println(uWithoutHttp)
+
+	minioClient, err := minio.New(uWithoutHttp, &minio.Options{
+		Creds:  credentials.NewStaticV4(o.Key, o.SecretKey, ""),
+		Secure: useSSL,
+	})
+	if err != nil {
+		log.Fatalf("error connecting to minio. %v", err)
+		return fmt.Errorf("error connecting to minio. %w", err)
+	}
+
+	// List buckets
+	buckets, err := minioClient.ListBuckets(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Buckets:")
+	for _, bucket := range buckets {
+		log.Println(bucket.Name)
+	}
+
+	return nil
+}
+
+func getObjectData(api *KubernetesAPI, name string, namespace string) (*ObjectStorage, error) {
+	object := ObjectStorage{}
+
+	// Get the Secret
+	secret, err := api.Client.CoreV1().Secrets(namespace).Get(context.TODO(), name, v1.GetOptions{})
+	if err != nil {
+		log.Fatalf("error getting the secret, does it exist? %v", err)
+		return nil, fmt.Errorf("error getting the secret, does it exist? %w", err)
+	}
+
+	// Get the Secret data
+	endpoint, ok := secret.Data["CNVRG_STORAGE_ENDPOINT"]
+	object.Endpoint = string(endpoint)
+	if !ok {
+		log.Fatalf("error getting the key CNVRG_STORAGE_ENDPOINT, does it exist? %v", err)
+		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_ENDPOINT, does it exist? %w", err)
+	}
+
+	key, ok := secret.Data["CNVRG_STORAGE_ACCESS_KEY"]
+	object.Key = string(key)
+	if !ok {
+		log.Fatalf("error getting the key CNVRG_STORAGE_ACCESS_KEY, does it exist? %v", err)
+		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_ACCESS_KEY, does it exist? %w", err)
+	}
+
+	secretKey, ok := secret.Data["CNVRG_STORAGE_SECRET_KEY"]
+	object.SecretKey = string(secretKey)
+	if !ok {
+		log.Fatalf("error getting the key CNVRG_STORAGE_SECRET_KEY, does it exist? %v", err)
+		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_SECRET_KEY, does it exist? %w", err)
+	}
+
+	region, ok := secret.Data["CNVRG_STORAGE_REGION"]
+	object.Region = string(region)
+	if !ok {
+		log.Fatalf("error getting the key CNVRG_STORAGE_REGION, does it exist? %v", err)
+		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_REGION, does it exist? %w", err)
+	}
+
+	storageType, ok := secret.Data["CNVRG_STORAGE_TYPE"]
+	object.Type = string(storageType)
+	if !ok {
+		log.Fatalf("error getting the key CNVRG_STORAGE_TYPE, does it exist? %v", err)
+		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_TYPE, does it exist? %w", err)
+	}
+
+	bucketName, ok := secret.Data["CNVRG_STORAGE_BUCKET"]
+	object.BucketName = string(bucketName)
+	if !ok {
+		log.Fatalf("error getting the key CNVRG_STORAGE_BUCKET, does it exist? %v", err)
+		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_BUCKET, does it exist? %w", err)
+	}
+
+	return &object, nil
 }
