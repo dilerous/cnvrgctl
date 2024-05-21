@@ -14,6 +14,8 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	restapi "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
 // TODO: roll cfgFile into the KubernetesAPI struct
@@ -25,7 +27,7 @@ var (
 )
 
 type KubernetesAPI struct {
-	Suffix  string
+	Rest    restapi.Client
 	Client  kubernetes.Interface
 	Dynamic dynamic.Interface
 	Config  *rest.Config
@@ -111,7 +113,7 @@ func initConfig() {
 func connectToK8s() (*KubernetesAPI, error) {
 
 	// Create Kubernetes client variable from the struct KubernetesAPI
-	client := KubernetesAPI{}
+	api := KubernetesAPI{}
 
 	kubeContextFlag, err := rootCmd.Flags().GetString("context")
 	if err != nil {
@@ -119,6 +121,12 @@ func connectToK8s() (*KubernetesAPI, error) {
 	}
 
 	kubeConfigFlag, err := rootCmd.Flags().GetString("kubeconfig")
+	if err != nil {
+		return nil, fmt.Errorf("error getting the kubeconfig path. %w", err)
+	}
+
+	// defining the rest api client used in creating argocd applications
+	api.Rest, err = restapi.New(config.GetConfigOrDie(), restapi.Options{})
 	if err != nil {
 		return nil, fmt.Errorf("error getting the kubeconfig path. %w", err)
 	}
@@ -137,7 +145,7 @@ func connectToK8s() (*KubernetesAPI, error) {
 
 	// Use the current context in kubeconfig
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
-	client.Config = config
+	api.Config = config
 
 	if err != nil {
 		// If building config fails, try in-cluster config
@@ -155,16 +163,16 @@ func connectToK8s() (*KubernetesAPI, error) {
 		}
 	}
 
-	client.Client, err = kubernetes.NewForConfig(config)
+	api.Client, err = kubernetes.NewForConfig(config)
 	if err != nil {
 		return nil, fmt.Errorf("error creating kubernetes client, exiting. %w", err)
 	}
 
 	// create the dynamic client
 	//TODO understand why this is created
-	client.Dynamic = dynamic.NewForConfigOrDie(config)
+	api.Dynamic = dynamic.NewForConfigOrDie(config)
 
-	return &client, nil
+	return &api, nil
 }
 
 // Gets the home env variable for linux/windows

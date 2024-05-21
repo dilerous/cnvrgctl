@@ -381,8 +381,7 @@ func connectToMinio(o *ObjectStorage) error {
 	// Initialize a new MinIO client
 	useSSL := false
 
-	u := o.Endpoint
-	uWithoutHttp := strings.Replace(u, "http://", "", 1)
+	uWithoutHttp := strings.Replace(o.Endpoint, "http://", "", 1)
 	fmt.Println(uWithoutHttp)
 
 	minioClient, err := minio.New(uWithoutHttp, &minio.Options{
@@ -397,7 +396,8 @@ func connectToMinio(o *ObjectStorage) error {
 	// List buckets
 	buckets, err := minioClient.ListBuckets(context.Background())
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("error listing the buckets. %v", err)
+		return fmt.Errorf("error listing the buckets. %w", err)
 	}
 
 	log.Println("Buckets:")
