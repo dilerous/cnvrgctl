@@ -1,5 +1,5 @@
 /*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 NAME HERE BRADLEY.SOPER@CNVRG.IO
 */
 package cmd
 
@@ -8,6 +8,16 @@ import (
 
 	"github.com/spf13/cobra"
 )
+
+type Flags struct {
+	Repo           string
+	ChartName      string
+	ReleaseName    string
+	Values         string
+	Domain         string
+	DryRun         bool
+	TargetRevision string
+}
 
 // installCmd represents the install command
 var installCmd = &cobra.Command{
@@ -26,14 +36,4 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(installCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// installCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// installCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

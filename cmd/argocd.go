@@ -51,35 +51,37 @@ Examples:
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("called the install argocd command function")
 
+		flags := Flags{}
+
 		// grab the namespace from the -n flag if not specified default is used
 		ns, _ := cmd.Flags().GetString("namespace")
 
 		// Flag to set the chart repo url
-		chartURLFlag, _ := cmd.Flags().GetString("repo")
+		flags.Repo, _ = cmd.Flags().GetString("repo")
 
 		// Flag to set the chart name for the install
-		chartNameFlag, _ := cmd.Flags().GetString("chart-name")
+		flags.ChartName, _ = cmd.Flags().GetString("chart-name")
 
 		// Flag to set the helm release name for the install
-		releaseNameFlag, _ := cmd.Flags().GetString("release-name")
+		flags.ReleaseName, _ = cmd.Flags().GetString("release-name")
 
 		// Flag to set the domain of the argocd deployment
-		domainFlag, _ := cmd.Flags().GetString("domain")
+		flags.Domain, _ = cmd.Flags().GetString("domain")
 
 		// Flag to set if dry-run should be ran for the install
-		dryRun, _ := cmd.Flags().GetBool("dry-run")
+		flags.DryRun, _ = cmd.Flags().GetBool("dry-run")
 
 		// Load the helm chart from the chartURL
-		chart, err := loadChart(chartURLFlag, chartNameFlag)
+		chart, err := loadChart(flags)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error loading the chart, check the url and path. %v", err)
 			log.Fatalf("error loading the chart, check the url and path. %v", err)
 		}
 
-		vals, _ := createValues(domainFlag)
+		vals, _ := createValues(flags.Domain)
 
 		// Install the helm chart, specifiy namespace and the release name for the install
-		err = deployHelmChart(ns, chart, releaseNameFlag, dryRun, vals)
+		err = deployHelmChart(ns, chart, flags, vals)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error installing the helm release, check the logs. %v", err)
 			log.Fatalf("error installing the helm release, check the logs. %v", err)
@@ -91,30 +93,30 @@ func init() {
 	installCmd.AddCommand(argocdCmd)
 
 	// flag to define the path to the chart repo
-	argocdCmd.PersistentFlags().StringP("repo", "", "https://argoproj.github.io/argo-helm", "define the chart repository url")
+	argocdCmd.Flags().StringP("repo", "", "https://argoproj.github.io/argo-helm", "define the chart repository url")
 
 	// flag to define the repository chart name
-	argocdCmd.PersistentFlags().StringP("chart-name", "", "argo-cd", "specify the chart name in the repository defined.")
+	argocdCmd.Flags().StringP("chart-name", "", "argo-cd", "specify the chart name in the repository defined.")
 
 	// flag to define the release name
-	argocdCmd.PersistentFlags().StringP("release-name", "", "argocd", "define the argocd helm release name.")
+	argocdCmd.Flags().StringP("release-name", "", "argocd", "define the argocd helm release name.")
 
 	// flag to define the values file for the install
-	argocdCmd.PersistentFlags().StringP("values", "f", "", "specify values in a YAML file or a URL.")
+	argocdCmd.Flags().StringP("values", "f", "", "specify values in a YAML file or a URL.")
 
 	// flag to define the argocd domain for install
-	argocdCmd.PersistentFlags().StringP("domain", "d", "argocd.example.com", "define the domain for the argocd deployment.")
+	argocdCmd.Flags().StringP("domain", "d", "argocd.example.com", "define the domain for the argocd deployment.")
 
 	// Adds the flag -t --tar to the logs command this is local
 	argocdCmd.Flags().BoolP("dry-run", "", false, "Perform a dry run of the install of argocd.")
 }
 
-func deployHelmChart(ns string, c *chart.Chart, release string, dryRun bool, vals map[string]interface{}) error {
+func deployHelmChart(ns string, c *chart.Chart, f Flags, vals map[string]interface{}) error {
 
 	// Define namespace, release name and chart to deploy the helm release
 	var (
 		namespace   = ns
-		releaseName = release
+		releaseName = f.ReleaseName
 		chart       = c
 	)
 
@@ -132,7 +134,7 @@ func deployHelmChart(ns string, c *chart.Chart, release string, dryRun bool, val
 	client.ReleaseName = releaseName
 
 	// if dry run is enabled from cli set client to run --dry-run on install
-	if dryRun {
+	if f.DryRun {
 		client.DryRun = true
 	}
 
@@ -180,18 +182,18 @@ func deployHelmChart(ns string, c *chart.Chart, release string, dryRun bool, val
 	return nil
 }
 
-func loadChart(url string, chartName string) (*chart.Chart, error) {
+func loadChart(f Flags) (*chart.Chart, error) {
 
 	// Set path to helm repository and chart name
 
-	var chartPath = url
+	var chartPath = f.Repo
 
 	// Define the chart options, set the repo url
 	var chartPathOptions action.ChartPathOptions = action.ChartPathOptions{
 		RepoURL: chartPath,
 	}
 	// locate the chart from the chartPathOptions
-	locateChartPath, err := chartPathOptions.LocateChart(chartName, settings)
+	locateChartPath, err := chartPathOptions.LocateChart(f.ChartName, settings)
 	if err != nil {
 		log.Printf("error locating the chart. %v", err)
 		return nil, fmt.Errorf("error locating the chart. %w", err)

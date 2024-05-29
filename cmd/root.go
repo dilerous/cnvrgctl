@@ -29,7 +29,7 @@ var (
 type KubernetesAPI struct {
 	Rest    restapi.Client
 	Client  kubernetes.Interface
-	Dynamic dynamic.Interface
+	Dynamic dynamic.DynamicClient
 	Config  *rest.Config
 }
 
@@ -170,7 +170,7 @@ func connectToK8s() (*KubernetesAPI, error) {
 
 	// create the dynamic client
 	//TODO understand why this is created
-	api.Dynamic = dynamic.NewForConfigOrDie(config)
+	api.Dynamic = *dynamic.NewForConfigOrDie(config)
 
 	return &api, nil
 }
