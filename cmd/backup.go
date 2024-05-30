@@ -33,6 +33,7 @@ type ObjectStorage struct {
 	Endpoint   string
 	Type       string
 	BucketName string
+	Namespace  string
 }
 
 // backupCmd represents the backup command
@@ -51,6 +52,8 @@ Examples:
   cnvrgctl migrate backup --target postgres-ha --label app.kubernetes.io/name -n cnvrg`,
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("called the migrate backup command function")
+
+		result := false
 
 		// target deployment of the postgres backup
 		targetFlag, _ := cmd.Flags().GetString("target")
@@ -71,7 +74,7 @@ Examples:
 			log.Fatalf("error connecting to the cluster, check your connectivity. %v", err)
 		}
 
-		err = scaleDeploy(api, nsFlag)
+		err = scaleDeployDown(api, nsFlag)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error scaling the deployment. %v", err)
 			log.Fatalf("error scaling the deployment. %v\n", err)
@@ -98,18 +101,27 @@ Examples:
 			log.Fatalf("error copying the database file. %v\n", err)
 		}
 
+		// get the object data and store in the ObjectStorage struct
 		objectData, err := getObjectData(api, s3SecretName, nsFlag)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "failed to get the S3 secret. %v", err)
 			log.Fatalf("failed to get the S3 secret. %v\n", err)
 		}
 
+		// check which type of bucket either minio or s3
+		//TODO: reduce all the if statements
 		if objectData.Type == "minio" {
 			err := connectToMinio(objectData)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "failed to get the S3 secret. %v", err)
 				log.Fatalf("failed to get the S3 secret. %v\n", err)
 			}
+			result, err = backupMinioBucketLocal(objectData)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "error backing up the bucket, check the logs. %v", err)
+				log.Fatalf("error backing up the bucket, check the logs. %v\n", err)
+			}
+
 		} else {
 			err = connectToS3(objectData)
 			if err != nil {
@@ -117,6 +129,12 @@ Examples:
 				log.Fatalf("failed to connect to the s3 bucket. %v", err)
 			}
 		}
+
+		//If the backup is successful, scale back up the pods
+		if result {
+			scaleDeployUp(api, nsFlag)
+		}
+
 	},
 }
 
@@ -135,20 +153,20 @@ func init() {
 }
 
 // scales the following deployments "app", "sidekiq", "systemkiq", "searchkiq", "cnvrg-operator" in the namespace specified
-func scaleDeploy(api *KubernetesAPI, nsFlag string) error {
+func scaleDeployDown(api *KubernetesAPI, ns string) error {
 
 	var (
 		// Set client, deployment names and namespace
 		clientset   = api.Client
 		deployNames = []string{"app", "sidekiq", "systemkiq", "searchkiq", "cnvrg-operator"}
-		namespace   = nsFlag
+		namespace   = ns
 	)
 
 	// Get the deployment
 	for _, deployName := range deployNames {
 
 		// Get the current number of replicas for the deployment
-		s, err := clientset.AppsV1().Deployments(nsFlag).GetScale(context.TODO(), deployName, v1.GetOptions{})
+		s, err := clientset.AppsV1().Deployments(namespace).GetScale(context.TODO(), deployName, v1.GetOptions{})
 		if err != nil {
 			fmt.Printf("there was an error getting the number of replicas for deployment %v, check the namespace specified is correct.\n %v", deployName, err)
 			return fmt.Errorf("there was an error getting the number of replicas for deployment %v, check the namespace specified is correct. %w", deployName, err)
@@ -166,13 +184,53 @@ func scaleDeploy(api *KubernetesAPI, nsFlag string) error {
 		}
 
 		// Print to screen the deployments scaled to 0
-		fmt.Printf("scaled deployment %s to 0 replicas.\n", scale.Name)
+		fmt.Printf("scaled deployment %s to %d replica(s).\n", scale.Name, sc.Spec.Replicas)
 		//TODO: add check for num of replicas = 0
 
 	}
 	//TODO: add a check if all replicas = 0
 	fmt.Println("waiting for pods to finish terminating...")
 	time.Sleep(10 * time.Second)
+	return nil
+}
+
+func scaleDeployUp(api *KubernetesAPI, ns string) error {
+
+	var (
+		// Set client, deployment names and namespace
+		clientset   = api.Client
+		deployNames = []string{"app", "sidekiq", "systemkiq", "searchkiq", "cnvrg-operator"}
+		namespace   = ns
+	)
+
+	// Get the deployment
+	for _, deployName := range deployNames {
+
+		// Get the current number of replicas for the deployment
+		s, err := clientset.AppsV1().Deployments(namespace).GetScale(context.TODO(), deployName, v1.GetOptions{})
+		if err != nil {
+			fmt.Printf("there was an error getting the number of replicas for deployment %v, check the namespace specified is correct.\n %v", deployName, err)
+			return fmt.Errorf("there was an error getting the number of replicas for deployment %v, check the namespace specified is correct. %w", deployName, err)
+		}
+
+		// create a v1.Scale object and set the replicas to 0
+		sc := *s
+		sc.Spec.Replicas = 1
+
+		// Scale the deployment to 0
+		scale, err := clientset.AppsV1().Deployments(namespace).UpdateScale(context.TODO(), deployName, &sc, v1.UpdateOptions{})
+		if err != nil {
+			fmt.Printf("there was an issue scaling the deployment %v.\n%v", deployName, err)
+			return fmt.Errorf("there was an issue scaling the deployment %v. %w", deployName, err)
+		}
+
+		// Print to screen the deployments scaled to 0
+		fmt.Printf("scaled deployment %s to %d replica(s).\n", scale.Name, sc.Spec.Replicas)
+		//TODO: add check for num of replicas = 0
+
+	}
+	//TODO: add a check if all replicas = 0
+	fmt.Println("scaling deployments back to 1 replica(s)...")
 	return nil
 }
 
@@ -377,6 +435,7 @@ func connectToS3(o *ObjectStorage) error {
 	return nil
 }
 
+// connect to minio storage
 func connectToMinio(o *ObjectStorage) error {
 	// Initialize a new MinIO client
 	useSSL := false
@@ -400,14 +459,15 @@ func connectToMinio(o *ObjectStorage) error {
 		return fmt.Errorf("error listing the buckets. %w", err)
 	}
 
-	log.Println("Buckets:")
+	// list the buckets that are found
 	for _, bucket := range buckets {
-		log.Println(bucket.Name)
+		log.Println("Buckets: " + bucket.Name)
 	}
 
 	return nil
 }
 
+// grabs the secret, key and endpoing from the cp-object-secret
 func getObjectData(api *KubernetesAPI, name string, namespace string) (*ObjectStorage, error) {
 	object := ObjectStorage{}
 
@@ -463,3 +523,51 @@ func getObjectData(api *KubernetesAPI, name string, namespace string) (*ObjectSt
 
 	return &object, nil
 }
+
+// TODO: check if useSSL = false, conslidate with get bucket function
+func backupMinioBucketLocal(o *ObjectStorage) (bool, error) {
+
+	// Initialize a new MinIO client
+	useSSL := false
+
+	//TODO: remove this section is already used in connectToMinio
+	uWithoutHttp := strings.Replace(o.Endpoint, "http://", "", 1)
+	fmt.Println(uWithoutHttp)
+
+	minioClient, err := minio.New(uWithoutHttp, &minio.Options{
+		Creds:  credentials.NewStaticV4(o.Key, o.SecretKey, ""),
+		Secure: useSSL,
+	})
+	if err != nil {
+		log.Fatalf("error connecting to minio. %v", err)
+		return false, fmt.Errorf("error connecting to minio. %w", err)
+	}
+
+	// grabs all the objects and copies them to the local folder ./cnvrg-storage
+	allObjects := minioClient.ListObjects(context.TODO(), o.BucketName, minio.ListObjectsOptions{Recursive: true})
+	for object := range allObjects {
+		fmt.Println(object)
+		minioClient.FGetObject(context.TODO(), o.BucketName, object.Key, "./cnvrg-storage/"+object.Key, minio.GetObjectOptions{})
+	}
+
+	fmt.Println("Successfully copied objects")
+	return true, nil
+}
+
+/*
+// Copy a file from MinIO to the local file system
+	srcOpts := minio.CopySrcOptions{
+		Bucket: o.BucketName,
+		Object: "cnvrg-storage",
+	}
+	dstOpts := minio.CopyDestOptions{
+		Object: "./cnvrg-storage",
+	}
+
+	// Copy object call
+	uploadInfo, err := minioClient.CopyObject(context.Background(), dstOpts, srcOpts)
+	if err != nil {
+		fmt.Println(err)
+		return fmt.Errorf("error copying the file. %w", err)
+	}
+*/

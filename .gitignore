@@ -2,6 +2,7 @@ logs/
 cnvrg-db-backup.sql
 cnvrgctl-logs.txt
 /bin/cnvrgctl
+cnvrg-storage/
 cmd/logs
 cmd/logs.tar.gz
 logs.tar.gz
