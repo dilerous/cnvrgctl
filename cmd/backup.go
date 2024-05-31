@@ -27,7 +27,7 @@ import (
 )
 
 type ObjectStorage struct {
-	Key        string
+	AccessKey  string
 	SecretKey  string
 	Region     string
 	Endpoint   string
@@ -87,7 +87,7 @@ Examples:
 		}
 
 		// execute the backup of the target postgres deployment
-		err = executeBackup(api, podName, nsFlag)
+		err = executePostgresBackup(api, podName, nsFlag)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error executing the backup, check the logs. %v", err)
 			log.Fatalf("error executing the backup, check the logs. %v\n", err)
@@ -142,13 +142,13 @@ func init() {
 	migrateCmd.AddCommand(backupCmd)
 
 	// flag to define the release name
-	backupCmd.PersistentFlags().StringP("target", "t", "postgres", "name of postgres deployment to backup.")
+	backupCmd.Flags().StringP("target", "t", "postgres", "name of postgres deployment to backup.")
 
 	// flag to define the app label key
-	backupCmd.PersistentFlags().StringP("label", "l", "app", "modify the key of the deployment label. example: app.kubernetes.io/name")
+	backupCmd.Flags().StringP("label", "l", "app", "modify the key of the deployment label. example: app.kubernetes.io/name")
 
 	// flag to define the release name
-	backupCmd.PersistentFlags().StringP("secret-name", "", "cp-object-storage", "define the name of the secret for the S3 bucket.")
+	backupCmd.Flags().StringP("secret-name", "", "cp-object-storage", "define the secret name for the S3 bucket credentials.")
 
 }
 
@@ -266,7 +266,7 @@ func getDeployPod(api *KubernetesAPI, targetFlag string, nsFlag string, labelTag
 
 // Executes a pg dump of the postgres database by getting the postgres pod name then running
 // pg_dump on the postgres pod
-func executeBackup(api *KubernetesAPI, pod string, nsFlag string) error {
+func executePostgresBackup(api *KubernetesAPI, pod string, nsFlag string) error {
 
 	// set variables for the clientset and pod name
 	var (
@@ -423,7 +423,7 @@ func connectToS3(o *ObjectStorage) error {
 	// Get object from bucket
 	obj, err := s3Client.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(o.BucketName),
-		Key:    aws.String(o.Key),
+		Key:    aws.String(o.AccessKey),
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -444,7 +444,7 @@ func connectToMinio(o *ObjectStorage) error {
 	fmt.Println(uWithoutHttp)
 
 	minioClient, err := minio.New(uWithoutHttp, &minio.Options{
-		Creds:  credentials.NewStaticV4(o.Key, o.SecretKey, ""),
+		Creds:  credentials.NewStaticV4(o.AccessKey, o.SecretKey, ""),
 		Secure: useSSL,
 	})
 	if err != nil {
@@ -487,7 +487,7 @@ func getObjectData(api *KubernetesAPI, name string, namespace string) (*ObjectSt
 	}
 
 	key, ok := secret.Data["CNVRG_STORAGE_ACCESS_KEY"]
-	object.Key = string(key)
+	object.AccessKey = string(key)
 	if !ok {
 		log.Fatalf("error getting the key CNVRG_STORAGE_ACCESS_KEY, does it exist? %v", err)
 		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_ACCESS_KEY, does it exist? %w", err)
@@ -535,7 +535,7 @@ func backupMinioBucketLocal(o *ObjectStorage) (bool, error) {
 	fmt.Println(uWithoutHttp)
 
 	minioClient, err := minio.New(uWithoutHttp, &minio.Options{
-		Creds:  credentials.NewStaticV4(o.Key, o.SecretKey, ""),
+		Creds:  credentials.NewStaticV4(o.AccessKey, o.SecretKey, ""),
 		Secure: useSSL,
 	})
 	if err != nil {
@@ -553,21 +553,3 @@ func backupMinioBucketLocal(o *ObjectStorage) (bool, error) {
 	fmt.Println("Successfully copied objects")
 	return true, nil
 }
-
-/*
-// Copy a file from MinIO to the local file system
-	srcOpts := minio.CopySrcOptions{
-		Bucket: o.BucketName,
-		Object: "cnvrg-storage",
-	}
-	dstOpts := minio.CopyDestOptions{
-		Object: "./cnvrg-storage",
-	}
-
-	// Copy object call
-	uploadInfo, err := minioClient.CopyObject(context.Background(), dstOpts, srcOpts)
-	if err != nil {
-		fmt.Println(err)
-		return fmt.Errorf("error copying the file. %w", err)
-	}
-*/
