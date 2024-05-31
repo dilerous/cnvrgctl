@@ -22,6 +22,7 @@ How to connect to the minio bucket using the `mc` cli tool.
 
     `mc alias set backup https://minio.aws.dilerous.cloud minio minio123 --insecure`
 4. To list files in your bucket run:
+
     `mc ls backup/cnvrg-backups --insecure`
 5. Congrats! You can successfully manage your bucket with the `mc` cli tool.
 6. If the minio environment is not going to be deleted following the migration,
