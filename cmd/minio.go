@@ -55,7 +55,7 @@ cnvrgctl install minio -n minio-operator --repo http://example.minio.com --op-re
 		opFlags.ReleaseName, _ = cmd.Flags().GetString("op-release")
 
 		// Flag to set the domain of the argocd deployment
-		opFlags.Domain, _ = cmd.Flags().GetString("op-domain")
+		opFlags.Domain, _ = cmd.Flags().GetString("op-url")
 
 		// Flag to set the domain of the argocd deployment
 		opFlags.TargetRevision, _ = cmd.Flags().GetString("op-target-version")
@@ -67,7 +67,7 @@ cnvrgctl install minio -n minio-operator --repo http://example.minio.com --op-re
 		tenantFlags.ReleaseName, _ = cmd.Flags().GetString("tenant-release")
 
 		// Flag to set the domain of the argocd deployment
-		tenantFlags.Domain, _ = cmd.Flags().GetString("tenant-domain")
+		tenantFlags.Domain, _ = cmd.Flags().GetString("tenant-url")
 
 		// Flag to set the domain of the argocd deployment
 		tenantFlags.TargetRevision, _ = cmd.Flags().GetString("tenant-target-version")
@@ -108,11 +108,11 @@ func init() {
 	// flag to define the release name
 	minioCmd.Flags().StringP("op-release", "", "minio-operator", "define the argocd helm release name.")
 
-	// flag to define the argocd domain for install
-	minioCmd.Flags().StringP("op-domain", "", "minio-operator.example.com", "define the domain for the argocd deployment.")
+	// flag to define the operator url for ingress
+	minioCmd.Flags().StringP("op-url", "", "minio-operator.example.com", "define the url for the operator deployment.")
 
-	// flag to define the argocd domain for install
-	minioCmd.Flags().StringP("op-target-version", "", "v5.0.15", "define the domain for the argocd deployment.")
+	// flag to define the helm chart version
+	minioCmd.Flags().StringP("op-target-version", "", "v5.0.15", "define the helm chart version.")
 
 	// flag to define the tenant repository chart name
 	minioCmd.Flags().StringP("tenant-chart", "", "tenant", "specify the chart name in the repository defined.")
@@ -120,11 +120,11 @@ func init() {
 	// flag to define the tenant release name
 	minioCmd.Flags().StringP("tenant-release", "", "minio-tenant", "define the argocd helm release name.")
 
-	// flag to define the argocd domain for install
-	minioCmd.Flags().StringP("tenant-domain", "", "minio.example.com", "define the domain for the argocd deployment.")
+	// flag to define the tenant url for ingress
+	minioCmd.Flags().StringP("tenant-url", "", "minio.example.com", "define the url for the tenant deployment.")
 
-	// flag to define the argocd domain for install
-	minioCmd.Flags().StringP("tenant-target-version", "", "v5.0.15", "define the domain for the argocd deployment.")
+	// flag to define the tenentant helm chart version
+	minioCmd.Flags().StringP("tenant-target-version", "", "v5.0.15", "define the helm chart version for the tenant.")
 
 }
 
@@ -280,7 +280,7 @@ func createMinioTenantApp(api *KubernetesAPI, ns string, f Flags) error {
 
 	if err != nil {
 		fmt.Println("error creating the minio-tenant application.", err)
-		updateMinioOperator(api, ns)
+		//updateMinioOperator(api, ns)
 		errorResponse(err)
 	} else {
 		fmt.Println("created the minio-tenant application.")
