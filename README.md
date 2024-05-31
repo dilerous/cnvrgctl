@@ -19,6 +19,7 @@ How to connect to the minio bucket using the `mc` cli tool.
 3. Set the alias, update the minio url as needed to match your deployment. The
    username and password are the default. In the minio console up can creat an
    access and secret key for additional security.
+
     `mc alias set backup https://minio.aws.dilerous.cloud minio minio123 --insecure`
 4. To list files in your bucket run:
     `mc ls backup/cnvrg-backups --insecure`
