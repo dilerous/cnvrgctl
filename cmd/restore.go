@@ -27,7 +27,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Println("restore called")
+		log.Println("restore command called")
 		o := ObjectStorage{}
 
 		// grab the namespace from the -n flag if not specified default is used
@@ -35,6 +35,16 @@ to quickly create a Cobra application.`,
 
 		// grab the namespace from the -n flag if not specified default is used
 		nsFlag, _ := cmd.Flags().GetString("namespace")
+
+		// define the url to the minio api
+		urlFlag, _ := cmd.Flags().GetString("minio-url")
+		o.Endpoint = urlFlag
+
+		// define the target bucket to restore the files too.
+		bucketFlag, _ := cmd.Flags().GetString("bucket")
+		if bucketFlag != "cnvrg-storage" {
+			o.BucketName = bucketFlag
+		}
 
 		// grab the namespace from the -n flag if not specified default is used
 		skFlag, _ := cmd.Flags().GetString("secret-key")
@@ -63,7 +73,8 @@ to quickly create a Cobra application.`,
 			}
 			uploadFilesMinio(objectData)
 		}
-
+		// upload files from minio using info from the flags
+		uploadFilesMinio(&o)
 	},
 }
 
@@ -74,29 +85,37 @@ func init() {
 	restoreCmd.Flags().StringP("secret-name", "", "cp-object-storage", "define the secret name for the S3 bucket credentials.")
 
 	// flag to define the secret for the object storage credentials
-	restoreCmd.Flags().StringP("secret-key", "s", "cp-object-storage", "define the secret key for the S3 bucket credentials.")
+	restoreCmd.Flags().StringP("secret-key", "k", "", "define the secret key for the S3 bucket credentials.")
 
 	// flag to define the secret for the object storage credentials
-	restoreCmd.Flags().StringP("access-key", "a", "cp-object-storage", "define the access key for the S3 bucket credentials.")
+	restoreCmd.Flags().StringP("access-key", "a", "", "define the access key for the S3 bucket credentials.")
+
+	// flag to define the backup bucket target
+	restoreCmd.Flags().StringP("bucket", "b", "cnvrg-storage", "define the bucket to restore the files too.")
+
+	// flag to define the backup bucket target
+	restoreCmd.Flags().StringP("minio-url", "u", "", "define the url to the minio api.")
 }
 
 // TODO: check if useSSL = false, conslidate with get bucket function
+// TODO: add in getting cp-object-secret
 func uploadFilesMinio(o *ObjectStorage) error {
+	log.Println("uploadFiles Minio function called.")
 	// Walk all the subdirectories of a directory
 	dir := "./cnvrg-storage"
 	useSSL := false
 
-	//TODO: remove this section is already used in connectToMinio
-	uWithoutHttp := strings.Replace(o.Endpoint, "http://", "", 1)
-	fmt.Println(uWithoutHttp)
+	url := strings.TrimSuffix(o.Endpoint, "https://")
+	fmt.Println(url)
 
-	minioClient, err := minio.New(uWithoutHttp, &minio.Options{
+	minioClient, err := minio.New(url, &minio.Options{
 		Creds:  credentials.NewStaticV4(o.AccessKey, o.SecretKey, ""),
 		Secure: useSSL,
 	})
+
 	if err != nil {
-		log.Fatalf("failed to get the S3 secret. %v\n", err)
-		return fmt.Errorf("failed to get the S3 secret. %w", err)
+		log.Fatalf("failed to configure minio client. %v\n", err)
+		return fmt.Errorf("failed to configure minio client. %w", err)
 	}
 
 	err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
@@ -105,16 +124,16 @@ func uploadFilesMinio(o *ObjectStorage) error {
 			return err
 		}
 
-		// Upload all files
-		ui, err := minioClient.FPutObject(context.TODO(), o.BucketName, path, path, minio.PutObjectOptions{})
-		if err != nil {
-			log.Fatalf("failed to get the S3 secret. %v\n", err)
-			return fmt.Errorf("failed to get the S3 secret. %w", err)
+		if !info.IsDir() {
+			// Upload all files
+			ui, err := minioClient.FPutObject(context.TODO(), o.BucketName, path, path, minio.PutObjectOptions{})
+			if err != nil {
+				log.Fatalf("failed to upload files to minio bucket. %v\n", err)
+				return fmt.Errorf("failed to upload files to minio bucket. %w", err)
 
+			}
+			fmt.Println(ui.Key)
 		}
-		fmt.Printf("info.Name = %v\n", info.Name())
-		fmt.Printf("Path = %v\n", path)
-		fmt.Printf(ui.Key)
 		return nil
 	})
 	if err != nil {
@@ -124,3 +143,20 @@ func uploadFilesMinio(o *ObjectStorage) error {
 	}
 	return nil
 }
+
+/*
+func setObjectStorageValues(o *ObjectStorage) error {
+	type ObjectStorage struct {
+		AccessKey  string
+		SecretKey  string
+		Region     string
+		Endpoint   string
+		Type       string
+		BucketName string
+		Namespace  string
+	}
+
+
+
+}
+*/

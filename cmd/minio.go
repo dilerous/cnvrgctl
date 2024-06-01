@@ -12,7 +12,6 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // minioCmd represents the minio command
@@ -239,7 +238,7 @@ func createMinioTenantApp(api *KubernetesAPI, ns string, f Flags) error {
 								"enabled": true,
 								"host":    f.Domain,
 								"annotations": map[string]interface{}{
-									"nginx.ingress.kubernetes.io/force-ssl-redirect": "true",
+									"nginx.ingress.kubernetes.io/force-ssl-redirect": "false",
 									"nginx.ingress.kubernetes.io/ssl-passthrough":    "true",
 									"nginx.ingress.kubernetes.io/backend-protocol":   "HTTPS",
 								},
@@ -305,6 +304,7 @@ func errorResponse(err error) {
 	}
 }
 
+/*
 // TODO: could never get update to work - needs to be fixed
 func updateMinioOperator(api *KubernetesAPI, ns string) {
 
@@ -343,6 +343,7 @@ func updateMinioOperator(api *KubernetesAPI, ns string) {
 		fmt.Println("error getting the custom resource. %w", err)
 	}
 }
+*/
 
 /*
 // Retrieve the existing custom resource object

@@ -9,6 +9,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
+type ObjectStorage struct {
+	AccessKey  string
+	SecretKey  string
+	Region     string
+	Endpoint   string
+	Type       string
+	BucketName string
+	Namespace  string
+}
+
 // migrateCmd represents the migrate command
 var migrateCmd = &cobra.Command{
 	Use:   "migrate",

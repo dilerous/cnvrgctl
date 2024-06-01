@@ -26,16 +26,6 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 )
 
-type ObjectStorage struct {
-	AccessKey  string
-	SecretKey  string
-	Region     string
-	Endpoint   string
-	Type       string
-	BucketName string
-	Namespace  string
-}
-
 // backupCmd represents the backup command
 var backupCmd = &cobra.Command{
 	Use:   "backup",
