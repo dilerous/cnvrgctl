@@ -3,11 +3,15 @@ cnvrg.io delivery cli tool
 
 ### How to use
 1. Download and install golang.
+
    `https://go.dev/doc/install`
 2. Clone down the directory.
+
    `git clone https://github.com/dilerous/cnvrgctl.git && cd cnvrgctl`
 3. Run the make file to create the go binary
+
    `make mac` #Create binary for arm on MacOS
+
    `make linux` #Create binary for amd64 on Linux
 
 ### Minio
