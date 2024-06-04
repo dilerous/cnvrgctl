@@ -29,13 +29,14 @@ import (
 // backupCmd represents the backup command
 var backupCmd = &cobra.Command{
 	Use:   "backup",
-	Short: "Executes backup commands on the postgres pod",
+	Short: "Executes backup commands on the postgres pod and files storage",
 	Long: `This command will initiate a pg_dump of the postgres database
-and save it to a file in the current directory.
+and save it to a file in the current directory. It will also backup the files from
+the minio cnvrg-storage bucket.
 
 Examples:
 
-# Backups the default postgres database in the cnvrg namespace.
+# Backups the default postgres database and files in the cnvrg namespace.
   cnvrgctl migrate backup -n cnvrg
 
 # Specify namespace, deployment label key, and deployment name.
@@ -84,7 +85,6 @@ Examples:
 		}
 
 		// copy the postgres backup to the local machine
-		fmt.Println("running the copyDBLocally function")
 		err = copyDBLocally(api, nsFlag, podName)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error copying the database file. %v", err)
@@ -92,7 +92,7 @@ Examples:
 		}
 
 		// get the object data and store in the ObjectStorage struct
-		objectData, err := getObjectData(api, s3SecretName, nsFlag)
+		objectData, err := getObjectSecret(api, s3SecretName, nsFlag)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "failed to get the S3 secret. %v", err)
 			log.Fatalf("failed to get the S3 secret. %v\n", err)
@@ -132,18 +132,19 @@ func init() {
 	migrateCmd.AddCommand(backupCmd)
 
 	// flag to define the release name
-	backupCmd.Flags().StringP("target", "t", "postgres", "name of postgres deployment to backup.")
+	backupCmd.Flags().StringP("target", "t", "postgres", "Name of postgres deployment to backup.")
 
 	// flag to define the app label key
-	backupCmd.Flags().StringP("label", "l", "app", "modify the key of the deployment label. example: app.kubernetes.io/name")
+	backupCmd.Flags().StringP("label", "l", "app", "Define the key of the deployment label for the postgres deployment. example: app.kubernetes.io/name")
 
 	// flag to define the release name
-	backupCmd.Flags().StringP("secret-name", "", "cp-object-storage", "define the secret name for the S3 bucket credentials.")
+	backupCmd.Flags().StringP("secret-name", "", "cp-object-storage", "Define the secret name for the S3 bucket credentials.")
 
 }
 
 // scales the following deployments "app", "sidekiq", "systemkiq", "searchkiq", "cnvrg-operator" in the namespace specified
 func scaleDeployDown(api *KubernetesAPI, ns string) error {
+	log.Println("scaleDeployDown function called.")
 
 	var (
 		// Set client, deployment names and namespace
@@ -185,6 +186,7 @@ func scaleDeployDown(api *KubernetesAPI, ns string) error {
 }
 
 func scaleDeployUp(api *KubernetesAPI, ns string) error {
+	log.Println("scaleDeployUp function called.")
 
 	var (
 		// Set client, deployment names and namespace
@@ -220,12 +222,14 @@ func scaleDeployUp(api *KubernetesAPI, ns string) error {
 
 	}
 	//TODO: add a check if all replicas = 0
-	fmt.Println("scaling deployments back to 1 replica(s)...")
+	fmt.Println("scaled deployments back to 1 replica(s)...")
 	return nil
 }
 
 // get the pod name from the deployment this will be passed to executeBackup function
 func getDeployPod(api *KubernetesAPI, targetFlag string, nsFlag string, labelTag string) (string, error) {
+	log.Println("getDeployPod function called.")
+
 	var (
 		// set the clientset, namespace, deployment name and label key
 		clientset  = api.Client
@@ -257,7 +261,7 @@ func getDeployPod(api *KubernetesAPI, targetFlag string, nsFlag string, labelTag
 // Executes a pg dump of the postgres database by getting the postgres pod name then running
 // pg_dump on the postgres pod
 func executePostgresBackup(api *KubernetesAPI, pod string, nsFlag string) error {
-
+	log.Println("executePostgresBackup function called.")
 	// set variables for the clientset and pod name
 	var (
 		clientset = api.Client
@@ -290,7 +294,7 @@ func executePostgresBackup(api *KubernetesAPI, pod string, nsFlag string) error 
 	// Execute the command in the pod
 	executor, err := remotecommand.NewSPDYExecutor(api.Config, "POST", req.URL())
 	if err != nil {
-		log.Fatalf("here was an error executing the commands in the pod. %v\n", err)
+		log.Printf("here was an error executing the commands in the pod. %v\n", err)
 		return fmt.Errorf("here was an error executing the commands in the pod. %w", err)
 	}
 
@@ -306,7 +310,7 @@ func executePostgresBackup(api *KubernetesAPI, pod string, nsFlag string) error 
 		Tty:    false,
 	})
 	if err != nil {
-		log.Fatalf("there was an error streaming the output of the command to stdout, stderr. %v\n", err)
+		log.Printf("there was an error streaming the output of the command to stdout, stderr. %v\n", err)
 		return fmt.Errorf("there was an error streaming the output of the command to stdout, stderr. %w", err)
 	}
 
@@ -316,6 +320,7 @@ func executePostgresBackup(api *KubernetesAPI, pod string, nsFlag string) error 
 }
 
 func copyDBLocally(api *KubernetesAPI, nsFlag string, pod string) error {
+	log.Println("copyDBLocally function called.")
 
 	//TODO: add flag to specify location of file
 	var ( // Set the pod and namespace
@@ -347,7 +352,7 @@ func copyDBLocally(api *KubernetesAPI, nsFlag string, pod string) error {
 	// execute the command
 	exec, err := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
 	if err != nil {
-		log.Fatalf("error executing the remote command. %v\n", err)
+		log.Printf("error executing the remote command. %v\n", err)
 		return fmt.Errorf("error execuuting the remote command. %w", err)
 	}
 
@@ -362,7 +367,7 @@ func copyDBLocally(api *KubernetesAPI, nsFlag string, pod string) error {
 	// Create a local file to write to
 	localFile, err := os.Create(filePath + backupFile)
 	if err != nil {
-		log.Fatalf("error creating local file. %v\n", err)
+		log.Printf("error creating local file. %v\n", err)
 		return fmt.Errorf("error creating local file. %w", err)
 	}
 	defer localFile.Close()
@@ -370,7 +375,7 @@ func copyDBLocally(api *KubernetesAPI, nsFlag string, pod string) error {
 	// open the file that was just created
 	file, err := os.OpenFile(filePath+backupFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Fatalf("opening the file failed. %s\n", err)
+		log.Printf("opening the file failed. %s\n", err)
 		return fmt.Errorf("opening the file failed. %w", err)
 	}
 	defer file.Close()
@@ -378,7 +383,7 @@ func copyDBLocally(api *KubernetesAPI, nsFlag string, pod string) error {
 	// copy the stream output from the cat command to the file.
 	_, err = io.Copy(file, &stdout)
 	if err != nil {
-		log.Fatalf("the copy failed. %v", err)
+		log.Printf("the copy failed. %v", err)
 		return fmt.Errorf("the copy failed. %w", err)
 	}
 
@@ -386,12 +391,13 @@ func copyDBLocally(api *KubernetesAPI, nsFlag string, pod string) error {
 }
 
 func connectToS3(o *ObjectStorage) error {
+	log.Println("connectToS3 function called.")
 
 	// Initialize a session that the SDK will use to load
 	// credentials from the shared credentials file ~/.aws/credentials
 	sess, err := session.NewSession(&aws.Config{Region: aws.String(o.Region)}, nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("the copy failed. %v", err)
 		return fmt.Errorf("the copy failed. %w", err)
 	}
 
@@ -401,7 +407,7 @@ func connectToS3(o *ObjectStorage) error {
 	// List buckets
 	buckets, err := s3Client.ListBuckets(&s3.ListBucketsInput{})
 	if err != nil {
-		log.Fatalf("error listing the buckets, check your credentials. %v", err)
+		log.Printf("error listing the buckets, check your credentials. %v", err)
 		return fmt.Errorf("the copy failed. %w", err)
 	}
 
@@ -416,7 +422,7 @@ func connectToS3(o *ObjectStorage) error {
 		Key:    aws.String(o.AccessKey),
 	})
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("the copy failed. %v", err)
 		return fmt.Errorf("the copy failed. %w", err)
 	}
 
@@ -425,121 +431,34 @@ func connectToS3(o *ObjectStorage) error {
 	return nil
 }
 
-// connect to minio storage
-func connectToMinio(o *ObjectStorage) error {
-	// Initialize a new MinIO client
-	useSSL := false
-
-	uWithoutHttp := strings.Replace(o.Endpoint, "http://", "", 1)
-	fmt.Println(uWithoutHttp)
-
-	minioClient, err := minio.New(uWithoutHttp, &minio.Options{
-		Creds:  credentials.NewStaticV4(o.AccessKey, o.SecretKey, ""),
-		Secure: useSSL,
-	})
-	if err != nil {
-		log.Fatalf("error connecting to minio. %v", err)
-		return fmt.Errorf("error connecting to minio. %w", err)
-	}
-
-	// List buckets
-	buckets, err := minioClient.ListBuckets(context.Background())
-	if err != nil {
-		log.Fatalf("error listing the buckets. %v", err)
-		return fmt.Errorf("error listing the buckets. %w", err)
-	}
-
-	// list the buckets that are found
-	for _, bucket := range buckets {
-		log.Println("Buckets: " + bucket.Name)
-	}
-
-	return nil
-}
-
-// grabs the secret, key and endpoing from the cp-object-secret
-func getObjectData(api *KubernetesAPI, name string, namespace string) (*ObjectStorage, error) {
-	object := ObjectStorage{}
-
-	// Get the Secret
-	secret, err := api.Client.CoreV1().Secrets(namespace).Get(context.TODO(), name, v1.GetOptions{})
-	if err != nil {
-		log.Fatalf("error getting the secret, does it exist? %v", err)
-		return nil, fmt.Errorf("error getting the secret, does it exist? %w", err)
-	}
-
-	// Get the Secret data
-	endpoint, ok := secret.Data["CNVRG_STORAGE_ENDPOINT"]
-	object.Endpoint = string(endpoint)
-	if !ok {
-		log.Fatalf("error getting the key CNVRG_STORAGE_ENDPOINT, does it exist? %v", err)
-		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_ENDPOINT, does it exist? %w", err)
-	}
-
-	key, ok := secret.Data["CNVRG_STORAGE_ACCESS_KEY"]
-	object.AccessKey = string(key)
-	if !ok {
-		log.Fatalf("error getting the key CNVRG_STORAGE_ACCESS_KEY, does it exist? %v", err)
-		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_ACCESS_KEY, does it exist? %w", err)
-	}
-
-	secretKey, ok := secret.Data["CNVRG_STORAGE_SECRET_KEY"]
-	object.SecretKey = string(secretKey)
-	if !ok {
-		log.Fatalf("error getting the key CNVRG_STORAGE_SECRET_KEY, does it exist? %v", err)
-		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_SECRET_KEY, does it exist? %w", err)
-	}
-
-	region, ok := secret.Data["CNVRG_STORAGE_REGION"]
-	object.Region = string(region)
-	if !ok {
-		log.Fatalf("error getting the key CNVRG_STORAGE_REGION, does it exist? %v", err)
-		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_REGION, does it exist? %w", err)
-	}
-
-	storageType, ok := secret.Data["CNVRG_STORAGE_TYPE"]
-	object.Type = string(storageType)
-	if !ok {
-		log.Fatalf("error getting the key CNVRG_STORAGE_TYPE, does it exist? %v", err)
-		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_TYPE, does it exist? %w", err)
-	}
-
-	bucketName, ok := secret.Data["CNVRG_STORAGE_BUCKET"]
-	object.BucketName = string(bucketName)
-	if !ok {
-		log.Fatalf("error getting the key CNVRG_STORAGE_BUCKET, does it exist? %v", err)
-		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_BUCKET, does it exist? %w", err)
-	}
-
-	return &object, nil
-}
-
 // TODO: check if useSSL = false, conslidate with get bucket function
 func backupMinioBucketLocal(o *ObjectStorage) (bool, error) {
+	log.Println("backupMinioBucketLocal function called.")
 
 	// Initialize a new MinIO client
 	useSSL := false
 
 	//TODO: remove this section is already used in connectToMinio
 	uWithoutHttp := strings.Replace(o.Endpoint, "http://", "", 1)
-	fmt.Println(uWithoutHttp)
+	log.Println(uWithoutHttp)
 
 	minioClient, err := minio.New(uWithoutHttp, &minio.Options{
 		Creds:  credentials.NewStaticV4(o.AccessKey, o.SecretKey, ""),
 		Secure: useSSL,
 	})
 	if err != nil {
-		log.Fatalf("error connecting to minio. %v", err)
+		log.Printf("error connecting to minio. %v", err)
 		return false, fmt.Errorf("error connecting to minio. %w", err)
 	}
 
 	// grabs all the objects and copies them to the local folder ./cnvrg-storage
 	allObjects := minioClient.ListObjects(context.TODO(), o.BucketName, minio.ListObjectsOptions{Recursive: true})
 	for object := range allObjects {
-		fmt.Println(object)
+		log.Println(object.Key)
+		fmt.Println(object.Key)
 		minioClient.FGetObject(context.TODO(), o.BucketName, object.Key, "./cnvrg-storage/"+object.Key, minio.GetObjectOptions{})
 	}
 
-	fmt.Println("Successfully copied objects")
+	fmt.Println("Successfully copied objects!")
 	return true, nil
 }

@@ -161,7 +161,7 @@ func getLogs(pods []corev1.Pod, num int, logdir string, clientset kubernetes.Int
 
 // TODO: create a flag that lets you define the folder the files live in; default ./logs
 func createTar() error {
-	fmt.Println("You called the tar flag")
+	log.Println("You called the tar flag")
 
 	tarFile := "logs.tar.gz"
 	dir := "./"
@@ -171,7 +171,7 @@ func createTar() error {
 		return fmt.Errorf("error creating the tar file, %v. %w", tarFile, err)
 	}
 
-	fmt.Println("Tar file created successfully:", tarFile)
+	fmt.Printf("tar file created successfully, %v\n", tarFile)
 	return nil
 }
 

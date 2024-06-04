@@ -20,7 +20,9 @@ import (
 var restoreCmd = &cobra.Command{
 	Use:   "restore",
 	Short: "Restore file backups to target bucket.",
-	Long: `This command will restore file backups to a bucket you specify.
+	Long: `This command will restore file backups to a bucket you specify. By default the credentials,
+bucket, and keys will be gathered from the cp-object-storage secret for the restore. You can manually
+specify these values using flags.
 
 Examples:
 	
@@ -28,7 +30,12 @@ Examples:
   cnvrgctl migrate restore -a minio -k minio123 -u minio.aws.dilerous.cloud -b cnvrg-backups`,
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("restore command called")
+
+		//define the empty object struct
 		o := ObjectStorage{}
+
+		// set success to false until backup completes successfully
+		success := false
 
 		// grab the namespace from the -n flag if not specified default is used
 		s3SecretName, _ := cmd.Flags().GetString("secret-name")
@@ -63,20 +70,31 @@ Examples:
 		// connect to kubernetes and define clientset and rest client
 		api, err := connectToK8s()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "error connecting to the cluster, check your connectivity. %v", err)
-			log.Fatalf("error connecting to the cluster, check your connectivity. %v", err)
+			fmt.Printf("error connecting to the cluster, check your connectivity. %v", err)
+			log.Printf("error connecting to the cluster, check your connectivity. %v", err)
 		}
 		// get the object data and store in the ObjectStorage struct
 		if skFlag == "" && akFlag == "" {
-			objectData, err := getObjectData(api, s3SecretName, nsFlag)
+			objectData, err := getObjectSecret(api, s3SecretName, nsFlag)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "failed to get the S3 secret. %v", err)
-				log.Fatalf("failed to get the S3 secret. %v\n", err)
+				fmt.Printf("failed to get the S3 secret. %v ", err)
+				log.Printf("failed to get the S3 secret. %v", err)
 			}
-			uploadFilesMinio(objectData, sourceFlag)
+			success, err = uploadFilesMinio(objectData, sourceFlag)
+			if err != nil {
+				log.Printf("failed to upload files. %v", err)
+				fmt.Printf("failed to upload files. %v ", err)
+			}
 		}
+
 		// upload files from minio using info from the flags
-		uploadFilesMinio(&o, sourceFlag)
+		if !success {
+			_, err = uploadFilesMinio(&o, sourceFlag)
+			if err != nil {
+				log.Printf("failed to upload files. %v", err)
+				fmt.Printf("failed to upload files. %v ", err)
+			}
+		}
 	},
 }
 
@@ -84,34 +102,40 @@ func init() {
 	migrateCmd.AddCommand(restoreCmd)
 
 	// flag to define the secret for the object storage credentials
-	restoreCmd.Flags().StringP("secret-name", "", "cp-object-storage", "define the secret name for the S3 bucket credentials.")
+	restoreCmd.Flags().StringP("secret-name", "", "cp-object-storage", "define the Kubernetes secret name for the S3 bucket credentials.")
 
 	// flag to define the secret for the object storage credentials
-	restoreCmd.Flags().StringP("secret-key", "k", "", "define the secret key for the S3 bucket credentials.")
+	restoreCmd.Flags().StringP("secret-key", "k", "", "define the secret key for the S3 bucket credentials. (required if bucket, access-key and minio-url is set)")
 
 	// flag to define the secret for the object storage credentials
-	restoreCmd.Flags().StringP("access-key", "a", "", "define the access key for the S3 bucket credentials.")
+	restoreCmd.Flags().StringP("access-key", "a", "", "define the access key for the S3 bucket credentials. (required if secret-key, bucket and minio-url is set)")
 
 	// flag to define the backup bucket target
-	restoreCmd.Flags().StringP("bucket", "b", "cnvrg-storage", "define the bucket to restore the files too.")
+	restoreCmd.Flags().StringP("bucket", "b", "cnvrg-storage", "define the bucket to restore the files too. (required if secret-key, access-key and minio-url is set)")
 
 	// flag to define the backup bucket target
-	restoreCmd.Flags().StringP("minio-url", "u", "", "define the url to the minio api.")
+	restoreCmd.Flags().StringP("minio-url", "u", "", "define the url to the minio api.(required if secret-key, access-key and bucket is set)")
 
 	// flag to define the source files
-	restoreCmd.Flags().StringP("source", "s", "cnvrg-storage", "define the source files to restore.")
+	restoreCmd.Flags().StringP("source", "s", "cnvrg-storage", "define the source folder to restore.")
+
+	//if any of the flags defined are set, they all must be set
+	restoreCmd.MarkFlagsRequiredTogether("secret-key", "access-key", "bucket", "minio-url")
+
 }
 
 // TODO: check if useSSL = false, conslidate with get bucket function
 // TODO: add in getting cp-object-secret
-func uploadFilesMinio(o *ObjectStorage, s string) error {
+func uploadFilesMinio(o *ObjectStorage, s string) (bool, error) {
 	log.Println("uploadFiles Minio function called.")
 	// Walk all the subdirectories of a directory
 	dir := s
 	useSSL := false
 
 	//remove https from the endpoint url
-	url := strings.TrimSuffix(o.Endpoint, "https://")
+	url := strings.TrimPrefix(o.Endpoint, "https://")
+	url = strings.TrimPrefix(url, "http://")
+	log.Println(url)
 
 	minioClient, err := minio.New(url, &minio.Options{
 		Creds:  credentials.NewStaticV4(o.AccessKey, o.SecretKey, ""),
@@ -119,37 +143,37 @@ func uploadFilesMinio(o *ObjectStorage, s string) error {
 	})
 
 	if err != nil {
-		log.Fatalf("failed to configure minio client. %v\n", err)
-		return fmt.Errorf("failed to configure minio client. %w", err)
+		log.Printf("failed to configure minio client. %v", err)
+		return false, fmt.Errorf("failed to configure minio client. %w", err)
 	}
 
 	err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			log.Fatalf("unable to walk the file path. %v\n", err)
+			log.Printf("unable to walk the file path. %v\n", err)
 			return fmt.Errorf("unable to walk the file path. %w", err)
 		}
 
 		if !info.IsDir() {
 			// trim the bucket name from the path
 			pathTrimmed := strings.TrimPrefix(path, dir)
-			fmt.Println("The path trimmed is: ", pathTrimmed)
+			log.Println("The path trimmed is: ", pathTrimmed)
 
 			// Upload all files
-			ui, err := minioClient.FPutObject(context.TODO(), o.BucketName, pathTrimmed, path, minio.PutObjectOptions{})
+			ui, err := minioClient.FPutObject(context.Background(), o.BucketName, pathTrimmed, path, minio.PutObjectOptions{})
 			if err != nil {
-				log.Fatalf("failed to upload files to minio bucket. %v\n", err)
+				log.Printf("failed to upload files to minio bucket. %v\n", err)
 				return fmt.Errorf("failed to upload files to minio bucket. %w", err)
 
 			}
-			fmt.Println(ui.Key)
-			log.Println(ui.Key)
+			fmt.Println("file " + ui.Key + " was uploaded successfully.")
+			log.Println("file " + ui.Key + " was uploaded successfully.")
 		}
 		return nil
 	})
 	if err != nil {
-		log.Fatalf("failed to get the S3 secret. %v\n", err)
-		return fmt.Errorf("failed to get the S3 secret. %w", err)
-
+		log.Printf("failed to get the S3 secret. %v", err)
+		return false, fmt.Errorf("failed to get the S3 secret. %w", err)
 	}
-	return nil
+	fmt.Println("Files uploaded successfully!")
+	return true, nil
 }
