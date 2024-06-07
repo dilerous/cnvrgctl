@@ -9,16 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type Flags struct {
-	Repo           string
-	ChartName      string
-	ReleaseName    string
-	Values         string
-	Domain         string
-	DryRun         bool
-	TargetRevision string
-}
-
 // installCmd represents the install command
 var installCmd = &cobra.Command{
 	Use:   "install",

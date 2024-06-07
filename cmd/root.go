@@ -26,13 +26,6 @@ var (
 	ErrorLogger   *log.Logger
 )
 
-type KubernetesAPI struct {
-	Rest    restapi.Client
-	Client  kubernetes.Interface
-	Dynamic dynamic.DynamicClient
-	Config  *rest.Config
-}
-
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "cnvrgctl",

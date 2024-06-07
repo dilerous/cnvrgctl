@@ -71,6 +71,7 @@ cnvrgctl install minio -n minio-operator --repo http://example.minio.com --op-re
 		// Flag to set the domain of the argocd deployment
 		tenantFlags.TargetRevision, _ = cmd.Flags().GetString("tenant-target-version")
 
+		// connect to kubernetes and get the client and rest api
 		api, err := connectToK8s()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error connecting to kubernetes, check your connectivity. %v", err)
@@ -275,7 +276,7 @@ func createMinioTenantApp(api *KubernetesAPI, ns string, f Flags) error {
 	})
 
 	// apply the minio-operator yaml file app
-	err := api.Rest.Create(context.TODO(), app)
+	err := api.Rest.Create(context.Background(), app)
 
 	if err != nil {
 		fmt.Println("error creating the minio-tenant application.", err)

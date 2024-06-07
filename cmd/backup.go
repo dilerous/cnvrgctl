@@ -157,7 +157,7 @@ func scaleDeployDown(api *KubernetesAPI, ns string) error {
 	for _, deployName := range deployNames {
 
 		// Get the current number of replicas for the deployment
-		s, err := clientset.AppsV1().Deployments(namespace).GetScale(context.TODO(), deployName, v1.GetOptions{})
+		s, err := clientset.AppsV1().Deployments(namespace).GetScale(context.Background(), deployName, v1.GetOptions{})
 		if err != nil {
 			fmt.Printf("there was an error getting the number of replicas for deployment %v, check the namespace specified is correct.\n %v", deployName, err)
 			return fmt.Errorf("there was an error getting the number of replicas for deployment %v, check the namespace specified is correct. %w", deployName, err)
@@ -168,7 +168,7 @@ func scaleDeployDown(api *KubernetesAPI, ns string) error {
 		sc.Spec.Replicas = 0
 
 		// Scale the deployment to 0
-		scale, err := clientset.AppsV1().Deployments(namespace).UpdateScale(context.TODO(), deployName, &sc, v1.UpdateOptions{})
+		scale, err := clientset.AppsV1().Deployments(namespace).UpdateScale(context.Background(), deployName, &sc, v1.UpdateOptions{})
 		if err != nil {
 			fmt.Printf("there was an issue scaling the deployment %v.\n%v", deployName, err)
 			return fmt.Errorf("there was an issue scaling the deployment %v. %w", deployName, err)
@@ -199,7 +199,7 @@ func scaleDeployUp(api *KubernetesAPI, ns string) error {
 	for _, deployName := range deployNames {
 
 		// Get the current number of replicas for the deployment
-		s, err := clientset.AppsV1().Deployments(namespace).GetScale(context.TODO(), deployName, v1.GetOptions{})
+		s, err := clientset.AppsV1().Deployments(namespace).GetScale(context.Background(), deployName, v1.GetOptions{})
 		if err != nil {
 			fmt.Printf("there was an error getting the number of replicas for deployment %v, check the namespace specified is correct.\n %v", deployName, err)
 			return fmt.Errorf("there was an error getting the number of replicas for deployment %v, check the namespace specified is correct. %w", deployName, err)
@@ -210,7 +210,7 @@ func scaleDeployUp(api *KubernetesAPI, ns string) error {
 		sc.Spec.Replicas = 1
 
 		// Scale the deployment to 0
-		scale, err := clientset.AppsV1().Deployments(namespace).UpdateScale(context.TODO(), deployName, &sc, v1.UpdateOptions{})
+		scale, err := clientset.AppsV1().Deployments(namespace).UpdateScale(context.Background(), deployName, &sc, v1.UpdateOptions{})
 		if err != nil {
 			fmt.Printf("there was an issue scaling the deployment %v.\n%v", deployName, err)
 			return fmt.Errorf("there was an issue scaling the deployment %v. %w", deployName, err)
@@ -239,7 +239,7 @@ func getDeployPod(api *KubernetesAPI, targetFlag string, nsFlag string, labelTag
 	)
 
 	// Get the Pods associated with the deployment
-	pods, err := clientset.CoreV1().Pods(namespace).List(context.TODO(), v1.ListOptions{
+	pods, err := clientset.CoreV1().Pods(namespace).List(context.Background(), v1.ListOptions{
 		LabelSelector: labels.Set{label: deployName}.AsSelector().String(),
 	})
 	if err != nil {
@@ -315,7 +315,7 @@ func executePostgresBackup(api *KubernetesAPI, pod string, nsFlag string) error 
 	}
 
 	//TODO add in a check if the file exits here cnvrg-db-backup.sql
-	fmt.Println("Backup successful!")
+	fmt.Println("Postgres DB Backup successful!")
 	return nil
 }
 
@@ -358,7 +358,7 @@ func copyDBLocally(api *KubernetesAPI, nsFlag string, pod string) error {
 
 	// set the variables to type byte and stream the output to those variables
 	var stdout, stderr bytes.Buffer
-	exec.StreamWithContext(context.TODO(), remotecommand.StreamOptions{
+	exec.StreamWithContext(context.Background(), remotecommand.StreamOptions{
 		Stdin:  nil,
 		Stdout: &stdout,
 		Stderr: &stderr,
@@ -452,11 +452,11 @@ func backupMinioBucketLocal(o *ObjectStorage) (bool, error) {
 	}
 
 	// grabs all the objects and copies them to the local folder ./cnvrg-storage
-	allObjects := minioClient.ListObjects(context.TODO(), o.BucketName, minio.ListObjectsOptions{Recursive: true})
+	allObjects := minioClient.ListObjects(context.Background(), o.BucketName, minio.ListObjectsOptions{Recursive: true})
 	for object := range allObjects {
 		log.Println(object.Key)
 		fmt.Println(object.Key)
-		minioClient.FGetObject(context.TODO(), o.BucketName, object.Key, "./cnvrg-storage/"+object.Key, minio.GetObjectOptions{})
+		minioClient.FGetObject(context.Background(), o.BucketName, object.Key, "./cnvrg-storage/"+object.Key, minio.GetObjectOptions{})
 	}
 
 	fmt.Println("Successfully copied objects!")

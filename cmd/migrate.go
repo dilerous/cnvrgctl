@@ -15,16 +15,6 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type ObjectStorage struct {
-	AccessKey  string
-	SecretKey  string
-	Region     string
-	Endpoint   string
-	Type       string
-	BucketName string
-	Namespace  string
-}
-
 // migrateCmd represents the migrate command
 var migrateCmd = &cobra.Command{
 	Use:   "migrate",
@@ -36,7 +26,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("migrate called")
+		log.Println("migrate called")
 	},
 }
 
@@ -59,7 +49,7 @@ func getObjectSecret(api *KubernetesAPI, name string, namespace string) (*Object
 	object := ObjectStorage{}
 
 	// Get the Secret
-	secret, err := api.Client.CoreV1().Secrets(namespace).Get(context.TODO(), name, v1.GetOptions{})
+	secret, err := api.Client.CoreV1().Secrets(namespace).Get(context.Background(), name, v1.GetOptions{})
 	if err != nil {
 		log.Printf("error getting the secret, does it exist? %v", err)
 		return &object, fmt.Errorf("error getting the secret, does it exist? %w ", err)
