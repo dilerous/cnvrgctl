@@ -33,8 +33,3 @@ type Flags struct {
 	DryRun         bool
 	TargetRevision string
 }
-
-type RestoreFlags struct {
-	DeployName  string
-	DeployLabel string
-}

@@ -11,7 +11,6 @@ import (
 	"log"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -20,8 +19,6 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/remotecommand"
 )
@@ -65,12 +62,14 @@ Examples:
 			log.Fatalf("error connecting to the cluster, check your connectivity. %v", err)
 		}
 
+		// scale down the application pods to prepare for backups
 		err = scaleDeployDown(api, nsFlag)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error scaling the deployment. %v", err)
 			log.Fatalf("error scaling the deployment. %v\n", err)
 		}
 
+		// get the pod name from the deployment defined
 		podName, err := getDeployPod(api, targetFlag, nsFlag, labelFlag)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error getting the pod name check the deployment label, namespace and target. %v", err)
@@ -140,122 +139,6 @@ func init() {
 	// flag to define the release name
 	backupCmd.Flags().StringP("secret-name", "", "cp-object-storage", "Define the secret name for the S3 bucket credentials.")
 
-}
-
-// scales the following deployments "app", "sidekiq", "systemkiq", "searchkiq", "cnvrg-operator" in the namespace specified
-func scaleDeployDown(api *KubernetesAPI, ns string) error {
-	log.Println("scaleDeployDown function called.")
-
-	var (
-		// Set client, deployment names and namespace
-		clientset   = api.Client
-		deployNames = []string{"app", "sidekiq", "systemkiq", "searchkiq", "cnvrg-operator"}
-		namespace   = ns
-	)
-
-	// Get the deployment
-	for _, deployName := range deployNames {
-
-		// Get the current number of replicas for the deployment
-		s, err := clientset.AppsV1().Deployments(namespace).GetScale(context.Background(), deployName, v1.GetOptions{})
-		if err != nil {
-			fmt.Printf("there was an error getting the number of replicas for deployment %v, check the namespace specified is correct.\n %v", deployName, err)
-			return fmt.Errorf("there was an error getting the number of replicas for deployment %v, check the namespace specified is correct. %w", deployName, err)
-		}
-
-		// create a v1.Scale object and set the replicas to 0
-		sc := *s
-		sc.Spec.Replicas = 0
-
-		// Scale the deployment to 0
-		scale, err := clientset.AppsV1().Deployments(namespace).UpdateScale(context.Background(), deployName, &sc, v1.UpdateOptions{})
-		if err != nil {
-			fmt.Printf("there was an issue scaling the deployment %v.\n%v", deployName, err)
-			return fmt.Errorf("there was an issue scaling the deployment %v. %w", deployName, err)
-		}
-
-		// Print to screen the deployments scaled to 0
-		fmt.Printf("scaled deployment %s to %d replica(s).\n", scale.Name, sc.Spec.Replicas)
-		//TODO: add check for num of replicas = 0
-
-	}
-	//TODO: add a check if all replicas = 0
-	fmt.Println("waiting for pods to finish terminating...")
-	time.Sleep(10 * time.Second)
-	return nil
-}
-
-func scaleDeployUp(api *KubernetesAPI, ns string) error {
-	log.Println("scaleDeployUp function called.")
-
-	var (
-		// Set client, deployment names and namespace
-		clientset   = api.Client
-		deployNames = []string{"app", "sidekiq", "systemkiq", "searchkiq", "cnvrg-operator"}
-		namespace   = ns
-	)
-
-	// Get the deployment
-	for _, deployName := range deployNames {
-
-		// Get the current number of replicas for the deployment
-		s, err := clientset.AppsV1().Deployments(namespace).GetScale(context.Background(), deployName, v1.GetOptions{})
-		if err != nil {
-			fmt.Printf("there was an error getting the number of replicas for deployment %v, check the namespace specified is correct.\n %v", deployName, err)
-			return fmt.Errorf("there was an error getting the number of replicas for deployment %v, check the namespace specified is correct. %w", deployName, err)
-		}
-
-		// create a v1.Scale object and set the replicas to 0
-		sc := *s
-		sc.Spec.Replicas = 1
-
-		// Scale the deployment to 0
-		scale, err := clientset.AppsV1().Deployments(namespace).UpdateScale(context.Background(), deployName, &sc, v1.UpdateOptions{})
-		if err != nil {
-			fmt.Printf("there was an issue scaling the deployment %v.\n%v", deployName, err)
-			return fmt.Errorf("there was an issue scaling the deployment %v. %w", deployName, err)
-		}
-
-		// Print to screen the deployments scaled to 0
-		fmt.Printf("scaled deployment %s to %d replica(s).\n", scale.Name, sc.Spec.Replicas)
-		//TODO: add check for num of replicas = 0
-
-	}
-	//TODO: add a check if all replicas = 0
-	fmt.Println("scaled deployments back to 1 replica(s)...")
-	return nil
-}
-
-// get the pod name from the deployment this will be passed to executeBackup function
-func getDeployPod(api *KubernetesAPI, targetFlag string, nsFlag string, labelTag string) (string, error) {
-	log.Println("getDeployPod function called.")
-
-	var (
-		// set the clientset, namespace, deployment name and label key
-		clientset  = api.Client
-		namespace  = nsFlag
-		deployName = targetFlag
-		label      = labelTag
-	)
-
-	// Get the Pods associated with the deployment
-	pods, err := clientset.CoreV1().Pods(namespace).List(context.Background(), v1.ListOptions{
-		LabelSelector: labels.Set{label: deployName}.AsSelector().String(),
-	})
-	if err != nil {
-		fmt.Printf("no pods found for the deployment. %v\n", err)
-		return "", fmt.Errorf("no pods found for this deployment %w", err)
-	}
-
-	// check if there is any pods in the list
-	if len(pods.Items) == 0 {
-		log.Println("there are no pods. check you have the correct namespace and the deployment exists.")
-		return "", fmt.Errorf("there are no pods. check you have the correct namespace and the deployment exists. %w", err)
-	}
-
-	// grab the first pod name in the list
-	podName := pods.Items[0].Name
-	return podName, nil
 }
 
 // Executes a pg dump of the postgres database by getting the postgres pod name then running

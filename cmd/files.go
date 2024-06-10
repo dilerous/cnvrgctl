@@ -20,7 +20,7 @@ import (
 // filesCmd represents the files command
 var filesCmd = &cobra.Command{
 	Use:   "files",
-	Short: "A brief description of your command",
+	Short: "restore files to the cnvrg-storage bucket",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
@@ -28,8 +28,6 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("files called")
-
 		log.Println("restore command called")
 
 		//define the empty object struct
@@ -179,39 +177,6 @@ func getObjectSecret(api *KubernetesAPI, name string, namespace string) (*Object
 	}
 
 	return &object, nil
-}
-
-// connect to minio storage
-// TODO Create generic and move to migrate
-func connectToMinio(o *ObjectStorage) error {
-	// Initialize a new MinIO client
-	useSSL := false
-
-	uWithoutHttp := strings.Replace(o.Endpoint, "http://", "", 1)
-	log.Println(uWithoutHttp)
-
-	minioClient, err := minio.New(uWithoutHttp, &minio.Options{
-		Creds:  credentials.NewStaticV4(o.AccessKey, o.SecretKey, ""),
-		Secure: useSSL,
-	})
-	if err != nil {
-		log.Printf("error connecting to minio. %v", err)
-		return fmt.Errorf("error connecting to minio. %w ", err)
-	}
-
-	// List buckets
-	buckets, err := minioClient.ListBuckets(context.Background())
-	if err != nil {
-		log.Printf("error listing the buckets. %v", err)
-		return fmt.Errorf("error listing the buckets. %w ", err)
-	}
-
-	// list the buckets that are found
-	for _, bucket := range buckets {
-		log.Println("Buckets: " + bucket.Name)
-	}
-
-	return nil
 }
 
 // TODO: check if useSSL = false, conslidate with get bucket function

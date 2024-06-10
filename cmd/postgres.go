@@ -24,19 +24,19 @@ import (
 // postgresCmd represents the postgres command
 var postgresCmd = &cobra.Command{
 	Use:   "postgres",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Restore the Postgres database backup.",
+	Long: `This command will scale down the application and supporting pods and 
+restore the Postgres database. 
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Examples:
+
+# Backups the default postgres database and files in the cnvrg namespace.
+  cnvrgctl migrate restore postgres -n cnvrg
+
+# Specify namespace, deployment label key, and deployment name.
+  cnvrgctl migrate restore postgres --target postgres-ha --label app.kubernetes.io/name -n cnvrg`,
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("postgres called")
-
-		// set the restoreFlags struct
-		//TODO: implement the struct
-		//	restoreFlags := &RestoreFlags{}
 
 		// target deployment of the postgres backup
 		targetFlag, _ := cmd.Flags().GetString("target")
@@ -45,7 +45,7 @@ to quickly create a Cobra application.`,
 		nsFlag, _ := cmd.Flags().GetString("namespace")
 
 		// grab the namespace from the -n flag if not specified default is used
-		labelFlag, _ := cmd.Flags().GetString("label")
+		labelFlag, _ := cmd.Flags().GetString("selector")
 
 		// connect to the kubernetes api and set clientset and rest client
 		api, err := connectToK8s()
@@ -94,11 +94,10 @@ func init() {
 
 	//TODO: These flags are stepping on one another
 	// flag to define the release name
-	// flag to define the release name
 	postgresCmd.Flags().StringP("target", "t", "postgres", "Name of postgres deployment to backup.")
 
 	// flag to define the app label key
-	postgresCmd.Flags().StringP("label", "l", "app", "Define the key of the deployment label for the postgres deployment. example: app.kubernetes.io/name")
+	postgresCmd.Flags().StringP("selector", "l", "app", "Define the deployment label for the postgres deployment. example: app.kubernetes.io/name")
 }
 
 func dropPgDB(a KubernetesAPI, n string, name string) error {
