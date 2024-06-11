@@ -4,12 +4,14 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -67,6 +69,13 @@ Examples:
 			log.Printf("there was a problem with scaling down the pods. %v", err)
 		}
 
+		// copy the local sql backup to the postgres pod
+		copyDBRemotely(api, nsFlag, podName)
+		if err != nil {
+			fmt.Printf("there was a problem copying the local backup to the pod. %v ", err)
+			log.Printf("there was a problem copying the local backup to the pod. %v", err)
+		}
+
 		// forward the postgres service and execute the sql commands
 		err = portForwardSvc(api, nsFlag, podName)
 		if err != nil {
@@ -94,7 +103,7 @@ func init() {
 
 	//TODO: These flags are stepping on one another
 	// flag to define the release name
-	postgresCmd.Flags().StringP("target", "t", "postgres", "Name of postgres deployment to backup.")
+	postgresCmd.Flags().StringP("target", "t", "postgres", "Name of postgres deployment to retore.")
 
 	// flag to define the app label key
 	postgresCmd.Flags().StringP("selector", "l", "app", "Define the deployment label for the postgres deployment. example: app.kubernetes.io/name")
@@ -300,3 +309,86 @@ func restorePostgresBackup(api *KubernetesAPI, n string, p string) error {
 	fmt.Println("Postgres DB Restore successful!")
 	return nil
 }
+
+func copyDBRemotely(api *KubernetesAPI, ns string, pod string) error {
+	log.Println("copyDBLocally function called.")
+
+	//TODO: add flag to specify location of file
+	var ( // Set the pod and namespace
+		podName    = pod
+		namespace  = ns
+		filePath   = "./"
+		backupFile = "cnvrg-db-backup.sql"
+		clientset  = api.Client
+		command    = []string{"cp", "/dev/stdin", "/opt/app-root/src/cnvrg-db-backup.sql"}
+		config     = api.Config
+	)
+
+	// open the file that was just created
+	file, err := os.Open(filePath + backupFile)
+	if err != nil {
+		log.Printf("opening the file failed. %s\n", err)
+		return fmt.Errorf("opening the file failed. %w", err)
+	}
+	defer file.Close()
+
+	// Create a REST client
+	log.Println("Creating the rest client call")
+	req := clientset.CoreV1().RESTClient().
+		Post().
+		Resource("pods").
+		Name(podName).
+		Namespace(namespace).
+		SubResource("exec").
+		VersionedParams(&corev1.PodExecOptions{
+			Command: command,
+			Stdin:   true,
+			Stdout:  true,
+			Stderr:  true,
+			TTY:     false,
+		}, scheme.ParameterCodec)
+
+	// execute the command
+	exec, err := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
+	if err != nil {
+		log.Printf("error executing the remote command. %v\n", err)
+		return fmt.Errorf("error execuuting the remote command. %w", err)
+	}
+
+	// set the variables to type byte and stream the output to those variables
+	var stdout, stderr bytes.Buffer
+
+	// Create a waitgroup to synchronize the completion of streaming
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	// execute the command
+	go func() {
+		exec.StreamWithContext(context.Background(), remotecommand.StreamOptions{
+			Stdin:  file,
+			Stdout: &stdout,
+			Stderr: &stderr,
+		})
+		wg.Done() // Signal that streaming is complete
+	}()
+
+	// Wait for streaming to finish
+	wg.Wait()
+
+	//no errors return nil
+	return nil
+}
+
+//"/bin/sh", "-c", "/bin/cp /dev/stdin /tmp/cnvrg-db-backup.sql && echo 'running command'"
+//"/bin/cp", "/dev/stdin", "/tmp/cnvrg-db-backup.sql", "&&", "echo", "'running command'"
+//"/bin/bash", "-c",
+//"cp", "/dev/stdin", "/tmp/cnvrg-db-backup.sql", "&&",
+
+/*
+	// copy the stream output from the cat command to the file.
+	_, err = io.Copy(&stdin, file)
+	if err != nil {
+		log.Printf("the copy failed. %v", err)
+		return fmt.Errorf("the copy failed. %w", err)
+	}
+*/

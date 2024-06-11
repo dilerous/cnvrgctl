@@ -241,6 +241,8 @@ func copyDBLocally(api *KubernetesAPI, nsFlag string, pod string) error {
 
 	// set the variables to type byte and stream the output to those variables
 	var stdout, stderr bytes.Buffer
+
+	// execute the command
 	exec.StreamWithContext(context.Background(), remotecommand.StreamOptions{
 		Stdin:  nil,
 		Stdout: &stdout,
