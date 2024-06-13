@@ -50,7 +50,7 @@ Examples:
 		labelFlag, _ := cmd.Flags().GetString("selector")
 
 		// connect to the kubernetes api and set clientset and rest client
-		api, err := connectToK8s()
+		api, err := ConnectToK8s()
 		if err != nil {
 			fmt.Printf("error connecting to the cluster, check your connectivity. %v", err)
 			log.Printf("error connecting to the cluster, check your connectivity. %v", err)
@@ -101,7 +101,6 @@ Examples:
 func init() {
 	restoreCmd.AddCommand(postgresCmd)
 
-	//TODO: These flags are stepping on one another
 	// flag to define the release name
 	postgresCmd.Flags().StringP("target", "t", "postgres", "Name of postgres deployment to retore.")
 
@@ -122,8 +121,8 @@ func dropPgDB(a KubernetesAPI, n string, name string) error {
 	// Connect to the PostgreSQL database
 	db, err := connectToPostgreSQL(&api, namespace, podName)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error connecting to postgresql. %v", err)
-		log.Fatalf("error connecting to postgresql. %v", err)
+		log.Printf("error connecting to postgresql. %v", err)
+		return fmt.Errorf("error connecting to postgresql. %w", err)
 	}
 	defer db.Close()
 
@@ -244,8 +243,10 @@ func portForwardSvc(api *KubernetesAPI, n string, p string) error {
 			return fmt.Errorf("error port forwarding. %w", err)
 		}
 		fmt.Println("Port forwarding completed successfully.")
+		log.Println("Port forwarding completed successfully.")
 	case <-readyChan:
 		fmt.Println("forwarding successfully closed.")
+		log.Println("forwarding successfully closed.")
 	}
 	return nil
 }
@@ -307,9 +308,11 @@ func restorePostgresBackup(api *KubernetesAPI, n string, p string) error {
 
 	//TODO add in a check if the file exits here cnvrg-db-backup.sql
 	fmt.Println("Postgres DB Restore successful!")
+	log.Println("Postgres DB Restore successful!")
 	return nil
 }
 
+// TODO: add flags to define the backup file name and path
 func copyDBRemotely(api *KubernetesAPI, ns string, pod string) error {
 	log.Println("copyDBLocally function called.")
 
@@ -378,17 +381,3 @@ func copyDBRemotely(api *KubernetesAPI, ns string, pod string) error {
 	//no errors return nil
 	return nil
 }
-
-//"/bin/sh", "-c", "/bin/cp /dev/stdin /tmp/cnvrg-db-backup.sql && echo 'running command'"
-//"/bin/cp", "/dev/stdin", "/tmp/cnvrg-db-backup.sql", "&&", "echo", "'running command'"
-//"/bin/bash", "-c",
-//"cp", "/dev/stdin", "/tmp/cnvrg-db-backup.sql", "&&",
-
-/*
-	// copy the stream output from the cat command to the file.
-	_, err = io.Copy(&stdin, file)
-	if err != nil {
-		log.Printf("the copy failed. %v", err)
-		return fmt.Errorf("the copy failed. %w", err)
-	}
-*/

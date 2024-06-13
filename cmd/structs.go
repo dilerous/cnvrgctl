@@ -32,4 +32,6 @@ type Flags struct {
 	Domain         string
 	DryRun         bool
 	TargetRevision string
+	ExternalIps    string
+	App            bool
 }

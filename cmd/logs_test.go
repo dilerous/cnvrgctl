@@ -211,10 +211,10 @@ func Test_ExecuteAnyCommand(t *testing.T) {
 
 	// Testing the root command
 	actual := new(bytes.Buffer)
-	rootCmd.SetOut(actual)
-	rootCmd.SetErr(actual)
-	rootCmd.SetArgs([]string{""})
-	rootCmd.Execute()
+	RootCmd.SetOut(actual)
+	RootCmd.SetErr(actual)
+	RootCmd.SetArgs([]string{""})
+	RootCmd.Execute()
 
 	// expected buffer length when calling the cnvrgctl command
 	expected := 1030
@@ -224,10 +224,10 @@ func Test_ExecuteAnyCommand(t *testing.T) {
 
 	// testing the logs command
 	logsActual := new(bytes.Buffer)
-	rootCmd.SetOut(logsActual)
-	rootCmd.SetErr(logsActual)
-	rootCmd.SetArgs([]string{"logs"})
-	rootCmd.Execute()
+	RootCmd.SetOut(logsActual)
+	RootCmd.SetErr(logsActual)
+	RootCmd.SetArgs([]string{"logs"})
+	RootCmd.Execute()
 
 	fmt.Println(logsActual.Len())
 

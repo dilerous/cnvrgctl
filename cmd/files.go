@@ -67,7 +67,7 @@ to quickly create a Cobra application.`,
 		}
 
 		// connect to kubernetes and define clientset and rest client
-		api, err := connectToK8s()
+		api, err := ConnectToK8s()
 		if err != nil {
 			fmt.Printf("error connecting to the cluster, check your connectivity. %v", err)
 			log.Printf("error connecting to the cluster, check your connectivity. %v", err)

@@ -56,7 +56,7 @@ Examples:
 		lines, _ := cmd.Flags().GetInt("lines")
 
 		// calls connect function to set the clientset for kubectl access
-		api, err := connectToK8s()
+		api, err := ConnectToK8s()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error connecting to cluster, check your connectivity. %v", err)
 		}
@@ -88,7 +88,7 @@ Examples:
 
 func init() {
 	// Adds the log command to the cli tool
-	rootCmd.AddCommand(logsCmd)
+	RootCmd.AddCommand(logsCmd)
 
 	// Adds the flag -t --tar to the logs command this is local
 	logsCmd.Flags().BoolP("tar", "t", false, "Tarball the log files")

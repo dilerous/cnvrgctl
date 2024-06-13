@@ -56,7 +56,7 @@ Examples:
 		s3SecretName, _ := cmd.Flags().GetString("secret-name")
 
 		// connect to kubernetes and define clientset and rest client
-		api, err := connectToK8s()
+		api, err := ConnectToK8s()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error connecting to the cluster, check your connectivity. %v", err)
 			log.Fatalf("error connecting to the cluster, check your connectivity. %v", err)

@@ -17,7 +17,7 @@ import (
 // minioCmd represents the minio command
 var minioCmd = &cobra.Command{
 	Use:   "minio",
-	Short: "deploys the minio operator and 1 tenant",
+	Short: "Installs the minio operator and one tenant",
 	Long: `Deploy the minio operator and a minio tenant can be used to store backups
 during the migration process. The installation by default will deploy an ingress resource,
 to access the minio operator ui, the minio tenant api, and tenant ui. Please see examples
@@ -53,10 +53,10 @@ cnvrgctl install minio -n minio-operator --repo http://example.minio.com --op-re
 		// Flag to set the helm release name for the install
 		opFlags.ReleaseName, _ = cmd.Flags().GetString("op-release")
 
-		// Flag to set the domain of the argocd deployment
+		// Flag to set the domain of the minio deployment
 		opFlags.Domain, _ = cmd.Flags().GetString("op-url")
 
-		// Flag to set the domain of the argocd deployment
+		// Flag to set the target version of the minio deployment
 		opFlags.TargetRevision, _ = cmd.Flags().GetString("op-target-version")
 
 		// Flag to set the chart repo url
@@ -72,7 +72,7 @@ cnvrgctl install minio -n minio-operator --repo http://example.minio.com --op-re
 		tenantFlags.TargetRevision, _ = cmd.Flags().GetString("tenant-target-version")
 
 		// connect to kubernetes and get the client and rest api
-		api, err := connectToK8s()
+		api, err := ConnectToK8s()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error connecting to kubernetes, check your connectivity. %v", err)
 			log.Fatalf("error connecting to kubernetes, check your connectivity. %v", err)
@@ -106,7 +106,7 @@ func init() {
 	minioCmd.Flags().StringP("op-chart", "", "operator", "specify the chart name in the repository defined.")
 
 	// flag to define the release name
-	minioCmd.Flags().StringP("op-release", "", "minio-operator", "define the argocd helm release name.")
+	minioCmd.Flags().StringP("op-release", "", "minio-operator", "define the minio helm release name.")
 
 	// flag to define the operator url for ingress
 	minioCmd.Flags().StringP("op-url", "", "minio-operator.example.com", "define the url for the operator deployment.")

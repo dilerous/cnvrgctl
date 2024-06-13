@@ -27,7 +27,7 @@ var (
 )
 
 // rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
+var RootCmd = &cobra.Command{
 	Use:   "cnvrgctl",
 	Short: "A brief description of your application",
 	Long: `A longer description that spans multiple lines and likely contains
@@ -44,7 +44,7 @@ to quickly create a Cobra application.`,
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	err := rootCmd.Execute()
+	err := RootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
 	}
@@ -57,20 +57,20 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cnvrgctl.yaml)")
+	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cnvrgctl.yaml)")
 
 	// Persistent flag to define the namespace
-	rootCmd.PersistentFlags().StringP("namespace", "n", "default", "If present, the namespace scope for this CLI request")
+	RootCmd.PersistentFlags().StringP("namespace", "n", "default", "If present, the namespace scope for this CLI request")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	RootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 	// Persistent flag for setting the kubeconfig
-	rootCmd.PersistentFlags().StringP("kubeconfig", "", "", "Path to the kubeconfig file to use for CLI requests")
+	RootCmd.PersistentFlags().StringP("kubeconfig", "", "", "Path to the kubeconfig file to use for CLI requests")
 
 	// Persistent flag for setting the context
-	rootCmd.PersistentFlags().StringP("context", "", "", "The name of the kubeconfig context to use")
+	RootCmd.PersistentFlags().StringP("context", "", "", "The name of the kubeconfig context to use")
 
 	// Start the logging for the cli
 	err := setLogger()
@@ -103,17 +103,17 @@ func initConfig() {
 	}
 }
 
-func connectToK8s() (*KubernetesAPI, error) {
+func ConnectToK8s() (*KubernetesAPI, error) {
 
 	// Create Kubernetes client variable from the struct KubernetesAPI
 	api := KubernetesAPI{}
 
-	kubeContextFlag, err := rootCmd.Flags().GetString("context")
+	kubeContextFlag, err := RootCmd.Flags().GetString("context")
 	if err != nil {
 		return nil, fmt.Errorf("error reading the kubeconfig context. %w", err)
 	}
 
-	kubeConfigFlag, err := rootCmd.Flags().GetString("kubeconfig")
+	kubeConfigFlag, err := RootCmd.Flags().GetString("kubeconfig")
 	if err != nil {
 		return nil, fmt.Errorf("error getting the kubeconfig path. %w", err)
 	}
@@ -186,6 +186,7 @@ func buildConfigWithContextFromFlags(context string, kubeconfigPath string) (*re
 		}).ClientConfig()
 }
 
+// TODO add flag to define logs file and path
 func setLogger() error {
 	LOG_FILE_PATH := "cnvrgctl-logs.txt"
 
