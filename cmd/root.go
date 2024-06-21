@@ -29,13 +29,14 @@ var (
 // rootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
 	Use:   "cnvrgctl",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short: "cnvrg.io delivery tool for cnvrg deployment maintenance",
+	Long: `cnvrg.io cli tool used to backup, migrate and install cnvrg.io. The tool
+can be used to migrate exisiting deployments or install new cnvrg classic.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Examples:
+
+# Backups the default postgres database and files in the cnvrg namespace.
+  cnvrgctl migrate restore postgres -n cnvrg`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
@@ -76,6 +77,7 @@ func init() {
 	err := setLogger()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "error configuring the logger.")
+		log.Printf("error configuring the logger. %v ", err)
 	}
 }
 
