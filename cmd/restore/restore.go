@@ -1,9 +1,10 @@
 /*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 NAME HERE BRADLEY.SOPER@CNVRG.IO
 */
-package cmd
+package restore
 
 import (
+	root "github.com/dilerous/cnvrgctl/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -24,5 +25,5 @@ Examples:
 }
 
 func init() {
-	migrateCmd.AddCommand(restoreCmd)
+	root.RootCmd.AddCommand(restoreCmd)
 }

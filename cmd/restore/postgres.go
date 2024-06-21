@@ -1,7 +1,7 @@
 /*
 Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 */
-package cmd
+package restore
 
 import (
 	"bytes"
@@ -14,6 +14,7 @@ import (
 	"sync"
 	"time"
 
+	root "github.com/dilerous/cnvrgctl/cmd"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -50,20 +51,20 @@ Examples:
 		labelFlag, _ := cmd.Flags().GetString("selector")
 
 		// connect to the kubernetes api and set clientset and rest client
-		api, err := ConnectToK8s()
+		api, err := root.ConnectToK8s()
 		if err != nil {
 			fmt.Printf("error connecting to the cluster, check your connectivity. %v", err)
 			log.Printf("error connecting to the cluster, check your connectivity. %v", err)
 		}
 
 		// get the postgres pod name
-		podName, err := getDeployPod(api, targetFlag, nsFlag, labelFlag)
+		podName, err := root.GetDeployPod(api, targetFlag, nsFlag, labelFlag)
 		if err != nil {
 			fmt.Printf("Error getting pod name: %v", err)
 			log.Printf("Error getting pod name: %v", err)
 		}
 
-		err = scaleDeployDown(api, nsFlag)
+		err = root.ScaleDeployDown(api, nsFlag)
 		if err != nil {
 			fmt.Printf("there was a problem with scaling down the pods. %v ", err)
 			log.Printf("there was a problem with scaling down the pods. %v", err)
@@ -90,7 +91,7 @@ Examples:
 			log.Printf("error restoring the backup, check the logs. %v", err)
 		}
 
-		err = scaleDeployUp(api, nsFlag)
+		err = root.ScaleDeployUp(api, nsFlag)
 		if err != nil {
 			fmt.Printf("there was a problem with scaling up the pods. %v ", err)
 			log.Printf("there was a problem with scaling up the pods. %v", err)
@@ -108,7 +109,7 @@ func init() {
 	postgresCmd.Flags().StringP("selector", "l", "app", "Define the deployment label for the postgres deployment. example: app.kubernetes.io/name")
 }
 
-func dropPgDB(a KubernetesAPI, n string, name string) error {
+func dropPgDB(a root.KubernetesAPI, n string, name string) error {
 	log.Println("dropPgDB function called.")
 
 	var (
@@ -145,7 +146,7 @@ func dropPgDB(a KubernetesAPI, n string, name string) error {
 }
 
 // Connect to the PostgreSQL database
-func connectToPostgreSQL(clientset *KubernetesAPI, namespace, podName string) (*sql.DB, error) {
+func connectToPostgreSQL(clientset *root.KubernetesAPI, namespace, podName string) (*sql.DB, error) {
 	log.Println("connectToPostgreSQL function called.")
 
 	api := clientset
@@ -169,7 +170,7 @@ func connectToPostgreSQL(clientset *KubernetesAPI, namespace, podName string) (*
 	return db, nil
 }
 
-func portForwardSvc(api *KubernetesAPI, n string, p string) error {
+func portForwardSvc(api *root.KubernetesAPI, n string, p string) error {
 	log.Println("portForwardSvc function called")
 
 	var (
@@ -251,7 +252,7 @@ func portForwardSvc(api *KubernetesAPI, n string, p string) error {
 	return nil
 }
 
-func restorePostgresBackup(api *KubernetesAPI, n string, p string) error {
+func restorePostgresBackup(api *root.KubernetesAPI, n string, p string) error {
 	log.Println("restorePostgresBackup function called.")
 
 	// set variables for the clientset and pod name
@@ -313,7 +314,7 @@ func restorePostgresBackup(api *KubernetesAPI, n string, p string) error {
 }
 
 // TODO: add flags to define the backup file name and path
-func copyDBRemotely(api *KubernetesAPI, ns string, pod string) error {
+func copyDBRemotely(api *root.KubernetesAPI, ns string, pod string) error {
 	log.Println("copyDBLocally function called.")
 
 	//TODO: add flag to specify location of file

@@ -1,7 +1,7 @@
 /*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 NAME HERE BRADLEY.SOPER@CNVRG.IO
 */
-package cmd
+package backup
 
 import (
 	"bytes"
@@ -15,6 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	root "github.com/dilerous/cnvrgctl/cmd"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/spf13/cobra"
@@ -56,21 +57,21 @@ Examples:
 		s3SecretName, _ := cmd.Flags().GetString("secret-name")
 
 		// connect to kubernetes and define clientset and rest client
-		api, err := ConnectToK8s()
+		api, err := root.ConnectToK8s()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error connecting to the cluster, check your connectivity. %v", err)
 			log.Fatalf("error connecting to the cluster, check your connectivity. %v", err)
 		}
 
 		// scale down the application pods to prepare for backups
-		err = scaleDeployDown(api, nsFlag)
+		err = root.ScaleDeployDown(api, nsFlag)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error scaling the deployment. %v", err)
 			log.Fatalf("error scaling the deployment. %v\n", err)
 		}
 
 		// get the pod name from the deployment defined
-		podName, err := getDeployPod(api, targetFlag, nsFlag, labelFlag)
+		podName, err := root.GetDeployPod(api, targetFlag, nsFlag, labelFlag)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error getting the pod name check the deployment label, namespace and target. %v", err)
 			log.Fatalf("error getting the pod name check the deployment label, namespace and target. %v", err)
@@ -91,7 +92,7 @@ Examples:
 		}
 
 		// get the object data and store in the ObjectStorage struct
-		objectData, err := getObjectSecret(api, s3SecretName, nsFlag)
+		objectData, err := root.GetObjectSecret(api, s3SecretName, nsFlag)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "failed to get the S3 secret. %v", err)
 			log.Fatalf("failed to get the S3 secret. %v\n", err)
@@ -121,14 +122,14 @@ Examples:
 
 		//If the backup is successful, scale back up the pods
 		if result {
-			scaleDeployUp(api, nsFlag)
+			root.ScaleDeployUp(api, nsFlag)
 		}
 
 	},
 }
 
 func init() {
-	migrateCmd.AddCommand(backupCmd)
+	root.RootCmd.AddCommand(backupCmd)
 
 	// flag to define the release name
 	backupCmd.Flags().StringP("target", "t", "postgres", "Name of postgres deployment to backup.")
@@ -143,7 +144,7 @@ func init() {
 
 // Executes a pg dump of the postgres database by getting the postgres pod name then running
 // pg_dump on the postgres pod
-func executePostgresBackup(api *KubernetesAPI, pod string, nsFlag string) error {
+func executePostgresBackup(api *root.KubernetesAPI, pod string, nsFlag string) error {
 	log.Println("executePostgresBackup function called.")
 	// set variables for the clientset and pod name
 	var (
@@ -202,7 +203,7 @@ func executePostgresBackup(api *KubernetesAPI, pod string, nsFlag string) error 
 	return nil
 }
 
-func copyDBLocally(api *KubernetesAPI, nsFlag string, pod string) error {
+func copyDBLocally(api *root.KubernetesAPI, nsFlag string, pod string) error {
 	log.Println("copyDBLocally function called.")
 
 	//TODO: add flag to specify location of file
@@ -275,7 +276,7 @@ func copyDBLocally(api *KubernetesAPI, nsFlag string, pod string) error {
 	return nil
 }
 
-func connectToS3(o *ObjectStorage) error {
+func connectToS3(o *root.ObjectStorage) error {
 	log.Println("connectToS3 function called.")
 
 	// Initialize a session that the SDK will use to load
@@ -317,7 +318,7 @@ func connectToS3(o *ObjectStorage) error {
 }
 
 // TODO: check if useSSL = false, conslidate with get bucket function
-func backupMinioBucketLocal(o *ObjectStorage) (bool, error) {
+func backupMinioBucketLocal(o *root.ObjectStorage) (bool, error) {
 	log.Println("backupMinioBucketLocal function called.")
 
 	// Initialize a new MinIO client
@@ -346,4 +347,38 @@ func backupMinioBucketLocal(o *ObjectStorage) (bool, error) {
 
 	fmt.Println("Successfully copied objects!")
 	return true, nil
+}
+
+// connect to minio storage
+// TODO Create generic and move to migrate
+// used by backup and restore commands
+func connectToMinio(o *root.ObjectStorage) error {
+	// Initialize a new MinIO client
+	useSSL := false
+
+	uWithoutHttp := strings.Replace(o.Endpoint, "http://", "", 1)
+	log.Println(uWithoutHttp)
+
+	minioClient, err := minio.New(uWithoutHttp, &minio.Options{
+		Creds:  credentials.NewStaticV4(o.AccessKey, o.SecretKey, ""),
+		Secure: useSSL,
+	})
+	if err != nil {
+		log.Printf("error connecting to minio. %v", err)
+		return fmt.Errorf("error connecting to minio. %w ", err)
+	}
+
+	// List buckets
+	buckets, err := minioClient.ListBuckets(context.Background())
+	if err != nil {
+		log.Printf("error listing the buckets. %v", err)
+		return fmt.Errorf("error listing the buckets. %w ", err)
+	}
+
+	// list the buckets that are found
+	for _, bucket := range buckets {
+		log.Println("Buckets: " + bucket.Name)
+	}
+
+	return nil
 }

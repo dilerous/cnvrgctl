@@ -1,7 +1,7 @@
 /*
 Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 */
-package cmd
+package restore
 
 import (
 	"context"
@@ -11,10 +11,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	root "github.com/dilerous/cnvrgctl/cmd"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/spf13/cobra"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // filesCmd represents the files command
@@ -31,7 +31,7 @@ to quickly create a Cobra application.`,
 		log.Println("restore command called")
 
 		//define the empty object struct
-		o := ObjectStorage{}
+		o := root.ObjectStorage{}
 
 		// set success to false until backup completes successfully
 		success := false
@@ -67,14 +67,14 @@ to quickly create a Cobra application.`,
 		}
 
 		// connect to kubernetes and define clientset and rest client
-		api, err := ConnectToK8s()
+		api, err := root.ConnectToK8s()
 		if err != nil {
 			fmt.Printf("error connecting to the cluster, check your connectivity. %v", err)
 			log.Printf("error connecting to the cluster, check your connectivity. %v", err)
 		}
 		// get the object data and store in the ObjectStorage struct
 		if skFlag == "" && akFlag == "" {
-			objectData, err := getObjectSecret(api, s3SecretName, nsFlag)
+			objectData, err := root.GetObjectSecret(api, s3SecretName, nsFlag)
 			if err != nil {
 				fmt.Printf("failed to get the S3 secret. %v ", err)
 				log.Printf("failed to get the S3 secret. %v", err)
@@ -122,66 +122,9 @@ func init() {
 	filesCmd.MarkFlagsRequiredTogether("secret-key", "access-key", "bucket", "minio-url")
 }
 
-// grabs the secret, key and endpoing from the cp-object-secret
-func getObjectSecret(api *KubernetesAPI, name string, namespace string) (*ObjectStorage, error) {
-	object := ObjectStorage{}
-
-	// Get the Secret
-	secret, err := api.Client.CoreV1().Secrets(namespace).Get(context.Background(), name, v1.GetOptions{})
-	if err != nil {
-		log.Printf("error getting the secret, does it exist? %v", err)
-		return &object, fmt.Errorf("error getting the secret, does it exist? %w ", err)
-	}
-
-	// Get the Secret data
-	endpoint, ok := secret.Data["CNVRG_STORAGE_ENDPOINT"]
-	object.Endpoint = string(endpoint)
-	if !ok {
-		log.Printf("error getting the key CNVRG_STORAGE_ENDPOINT, does it exist? %v", err)
-		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_ENDPOINT, does it exist? %w ", err)
-	}
-
-	key, ok := secret.Data["CNVRG_STORAGE_ACCESS_KEY"]
-	object.AccessKey = string(key)
-	if !ok {
-		log.Printf("error getting the key CNVRG_STORAGE_ACCESS_KEY, does it exist? %v", err)
-		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_ACCESS_KEY, does it exist? %w ", err)
-	}
-
-	secretKey, ok := secret.Data["CNVRG_STORAGE_SECRET_KEY"]
-	object.SecretKey = string(secretKey)
-	if !ok {
-		log.Printf("error getting the key CNVRG_STORAGE_SECRET_KEY, does it exist? %v", err)
-		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_SECRET_KEY, does it exist? %w ", err)
-	}
-
-	region, ok := secret.Data["CNVRG_STORAGE_REGION"]
-	object.Region = string(region)
-	if !ok {
-		log.Printf("error getting the key CNVRG_STORAGE_REGION, does it exist? %v", err)
-		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_REGION, does it exist? %w ", err)
-	}
-
-	storageType, ok := secret.Data["CNVRG_STORAGE_TYPE"]
-	object.Type = string(storageType)
-	if !ok {
-		log.Printf("error getting the key CNVRG_STORAGE_TYPE, does it exist? %v", err)
-		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_TYPE, does it exist? %w ", err)
-	}
-
-	bucketName, ok := secret.Data["CNVRG_STORAGE_BUCKET"]
-	object.BucketName = string(bucketName)
-	if !ok {
-		log.Printf("error getting the key CNVRG_STORAGE_BUCKET, does it exist? %v", err)
-		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_BUCKET, does it exist? %w ", err)
-	}
-
-	return &object, nil
-}
-
 // TODO: check if useSSL = false, conslidate with get bucket function
 // TODO: add in getting cp-object-secret
-func uploadFilesMinio(o *ObjectStorage, s string) (bool, error) {
+func uploadFilesMinio(o *root.ObjectStorage, s string) (bool, error) {
 	log.Println("uploadFiles Minio function called.")
 	// Walk all the subdirectories of a directory
 	dir := s

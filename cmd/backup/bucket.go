@@ -4,6 +4,7 @@ Copyright © 2024 NAME HERE BRADLEY.SOPER@CNVRG.IO
 package backup
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/dilerous/cnvrgctl/cmd"
@@ -37,4 +38,19 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// bucketCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func NewCmdBucket() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "subcommand1",
+		Short: "This is subcommand1",
+		Long:  "This is a longer description for subcommand1",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("Executing subcommand1")
+		},
+	}
+
+	// Add flags, arguments, etc., specific to subcommand1 if needed
+
+	return cmd
 }
