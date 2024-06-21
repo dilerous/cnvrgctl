@@ -108,13 +108,16 @@ func init() {
 	nginxCmd.Flags().StringP("release", "", "nginx", "define the nginx helm release name.")
 
 	// flag to define the helm chart version
-	nginxCmd.Flags().StringP("target-version", "", "4.10.1", "define the helm chart version.")
+	nginxCmd.Flags().StringP("target-version", "t", "4.10.1", "define the helm chart version.")
 
 	// flag to define the externalIps
 	nginxCmd.Flags().StringP("external-ips", "e", "", "define an external IP.")
 
 	// flag to define the externalIps
 	nginxCmd.Flags().BoolP("app", "", false, "install nginx as an application in ArgoCD.")
+
+	// flag to define the namespace argocd is deployed
+	nginxCmd.Flags().StringP("argocd-namespace", "a", "argocd", "define the namespace for the argocd deployment.")
 }
 
 // apply the ingress nginx application yaml
@@ -186,6 +189,7 @@ func createNginxApp(api *KubernetesAPI, ns string, f Flags) error {
 	return nil
 }
 
+// create the values for the helm install
 func createNginxValues(f Flags) (map[string]interface{}, error) {
 
 	// define default values

@@ -34,4 +34,5 @@ type Flags struct {
 	TargetRevision string
 	ExternalIps    string
 	App            bool
+	Argocd         string
 }

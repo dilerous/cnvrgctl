@@ -126,6 +126,9 @@ func init() {
 	// flag to define the tenentant helm chart version
 	minioCmd.Flags().StringP("tenant-target-version", "", "v5.0.15", "define the helm chart version for the tenant.")
 
+	// flag to define the namespace argocd is deployed
+	minioCmd.Flags().StringP("argocd-namespace", "a", "argocd", "define the namespace for the argocd deployment.")
+
 }
 
 // apply the minio operator application yaml
