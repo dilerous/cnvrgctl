@@ -10,7 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
-// grabs the secret, key and endpoing from the cp-object-secret
+// grabs the secret, key and endpoint from the cp-object-secret
 func GetObjectSecret(api *KubernetesAPI, name string, namespace string) (*ObjectStorage, error) {
 	object := ObjectStorage{}
 
@@ -29,6 +29,7 @@ func GetObjectSecret(api *KubernetesAPI, name string, namespace string) (*Object
 		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_ENDPOINT, does it exist? %w ", err)
 	}
 
+	// get the storage access key
 	key, ok := secret.Data["CNVRG_STORAGE_ACCESS_KEY"]
 	object.AccessKey = string(key)
 	if !ok {
@@ -36,6 +37,7 @@ func GetObjectSecret(api *KubernetesAPI, name string, namespace string) (*Object
 		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_ACCESS_KEY, does it exist? %w ", err)
 	}
 
+	// get the storage secret key
 	secretKey, ok := secret.Data["CNVRG_STORAGE_SECRET_KEY"]
 	object.SecretKey = string(secretKey)
 	if !ok {
@@ -43,6 +45,7 @@ func GetObjectSecret(api *KubernetesAPI, name string, namespace string) (*Object
 		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_SECRET_KEY, does it exist? %w ", err)
 	}
 
+	// get the bucket region
 	region, ok := secret.Data["CNVRG_STORAGE_REGION"]
 	object.Region = string(region)
 	if !ok {
@@ -50,6 +53,7 @@ func GetObjectSecret(api *KubernetesAPI, name string, namespace string) (*Object
 		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_REGION, does it exist? %w ", err)
 	}
 
+	// get the bucket storage type
 	storageType, ok := secret.Data["CNVRG_STORAGE_TYPE"]
 	object.Type = string(storageType)
 	if !ok {
@@ -57,6 +61,7 @@ func GetObjectSecret(api *KubernetesAPI, name string, namespace string) (*Object
 		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_TYPE, does it exist? %w ", err)
 	}
 
+	// get the name of the cnvrg storage bucket
 	bucketName, ok := secret.Data["CNVRG_STORAGE_BUCKET"]
 	object.BucketName = string(bucketName)
 	if !ok {
@@ -64,6 +69,7 @@ func GetObjectSecret(api *KubernetesAPI, name string, namespace string) (*Object
 		return nil, fmt.Errorf("error getting the key CNVRG_STORAGE_BUCKET, does it exist? %w ", err)
 	}
 
+	// return the struct and no error
 	return &object, nil
 }
 

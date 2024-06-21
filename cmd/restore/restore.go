@@ -11,10 +11,10 @@ import (
 // restoreCmd represents the restore command
 var restoreCmd = &cobra.Command{
 	Use:   "restore",
-	Short: "Restore file backups to target bucket.",
+	Short: "Restore file backups and database backups.",
 	Long: `This command will restore file backups to a bucket you specify. By default the credentials,
 bucket, and keys will be gathered from the cp-object-storage secret for the restore. You can manually
-specify these values using flags.
+specify these values using flags. You 
 
 Examples:
 	
