@@ -1,7 +1,7 @@
 /*
 Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 */
-package cmd
+package install
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 
+	root "github.com/dilerous/cnvrgctl/cmd"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -37,7 +38,7 @@ Examples:
 		log.Println("nginx called")
 
 		// call the Flags structs
-		flags := Flags{}
+		flags := root.Flags{}
 
 		// grab the namespace from the -n flag if not specified default is used
 		ns, _ := cmd.Flags().GetString("namespace")
@@ -64,7 +65,7 @@ Examples:
 		vals, _ := createNginxValues(flags)
 
 		// connect to kubernetes and get the client and rest api
-		api, err := ConnectToK8s()
+		api, err := root.ConnectToK8s()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error connecting to kubernetes, check your connectivity. %v", err)
 			log.Fatalf("error connecting to kubernetes, check your connectivity. %v", err)
@@ -121,7 +122,7 @@ func init() {
 }
 
 // apply the ingress nginx application yaml
-func createNginxApp(api *KubernetesAPI, ns string, f Flags) error {
+func createNginxApp(api *root.KubernetesAPI, ns string, f root.Flags) error {
 	log.Println("createMinioValues function called")
 
 	// define the application yaml
@@ -190,7 +191,7 @@ func createNginxApp(api *KubernetesAPI, ns string, f Flags) error {
 }
 
 // create the values for the helm install
-func createNginxValues(f Flags) (map[string]interface{}, error) {
+func createNginxValues(f root.Flags) (map[string]interface{}, error) {
 
 	// define default values
 	vals := map[string]interface{}{

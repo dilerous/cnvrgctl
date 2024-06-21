@@ -1,7 +1,7 @@
 /*
 Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 */
-package cmd
+package install
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 
+	root "github.com/dilerous/cnvrgctl/cmd"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -37,8 +38,8 @@ cnvrgctl install minio -n minio-operator --repo http://example.minio.com --op-re
 		log.Println("minio command called")
 
 		// call the Flags structs
-		opFlags := Flags{}
-		tenantFlags := Flags{}
+		opFlags := root.Flags{}
+		tenantFlags := root.Flags{}
 
 		// grab the namespace from the -n flag if not specified default is used
 		ns, _ := cmd.Flags().GetString("namespace")
@@ -72,7 +73,7 @@ cnvrgctl install minio -n minio-operator --repo http://example.minio.com --op-re
 		tenantFlags.TargetRevision, _ = cmd.Flags().GetString("tenant-target-version")
 
 		// connect to kubernetes and get the client and rest api
-		api, err := ConnectToK8s()
+		api, err := root.ConnectToK8s()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error connecting to kubernetes, check your connectivity. %v", err)
 			log.Fatalf("error connecting to kubernetes, check your connectivity. %v", err)
@@ -132,7 +133,7 @@ func init() {
 }
 
 // apply the minio operator application yaml
-func createMinioOperatorApp(api *KubernetesAPI, ns string, f Flags) error {
+func createMinioOperatorApp(api *root.KubernetesAPI, ns string, f root.Flags) error {
 	log.Println("createMinioValues function called")
 
 	// define the application yaml
@@ -197,7 +198,7 @@ func createMinioOperatorApp(api *KubernetesAPI, ns string, f Flags) error {
 
 // TODO create a struct for all of the flags being passed
 // apply the minio operator application yaml
-func createMinioTenantApp(api *KubernetesAPI, ns string, f Flags) error {
+func createMinioTenantApp(api *root.KubernetesAPI, ns string, f root.Flags) error {
 	log.Println("createMinioTenantApp called")
 
 	//TODO: add ability to dynamically grab the argocd namespace

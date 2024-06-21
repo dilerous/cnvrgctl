@@ -27,15 +27,13 @@ import (
 // backupCmd represents the backup command
 var backupCmd = &cobra.Command{
 	Use:   "backup",
-	Short: "Executes backup commands on the postgres pod and files storage",
-	Long: `This command will initiate a pg_dump of the postgres database
-and save it to a file in the current directory. It will also backup the files from
-the minio cnvrg-storage bucket.
+	Short: "Backs up the cnvrg.io postgres database or files",
+	Long: `Backup either the postgres database or the files used by cnvrg.io.
 
 Examples:
 
 # Backups the default postgres database and files in the cnvrg namespace.
-  cnvrgctl migrate backup -n cnvrg
+  cnvrgctl backup database -n cnvrg
 
 # Specify namespace, deployment label key, and deployment name.
   cnvrgctl migrate backup --target postgres-ha --label app.kubernetes.io/name -n cnvrg`,

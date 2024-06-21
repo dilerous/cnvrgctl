@@ -1,7 +1,7 @@
 /*
 Copyright © 2024 Brad Soper BRADLEY.SOPER@CNVRG.IO
 */
-package cmd
+package install
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 
+	root "github.com/dilerous/cnvrgctl/cmd"
 	"github.com/spf13/cobra"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
@@ -21,22 +22,18 @@ import (
 var installCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Install cnvrg and supporting applications.",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Long: `Install ArgoCD to manage deployments of additional helm 
+charts.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("install cmd called")
+		log.Println("install cmd called")
 	},
 }
 
 func init() {
-	RootCmd.AddCommand(installCmd)
+	root.RootCmd.AddCommand(installCmd)
 }
 
-func loadChart(f Flags) (*chart.Chart, error) {
+func loadChart(f root.Flags) (*chart.Chart, error) {
 
 	// Set path to helm repository and chart name
 	var chartPath = f.Repo
@@ -83,7 +80,7 @@ func checkNamespaceExists(ns string, clientset kubernetes.Interface) (bool, erro
 }
 
 // Deploy the helm chart defined with the values built
-func deployHelmChart(ns string, c *chart.Chart, f Flags, vals map[string]interface{}) error {
+func deployHelmChart(ns string, c *chart.Chart, f root.Flags, vals map[string]interface{}) error {
 
 	// Define namespace, release name and chart to deploy the helm release
 	var (
@@ -112,7 +109,7 @@ func deployHelmChart(ns string, c *chart.Chart, f Flags, vals map[string]interfa
 
 	// check if the namespace exists
 	// connect to k8s to query if namespace exists
-	api, err := ConnectToK8s()
+	api, err := root.ConnectToK8s()
 	if err != nil {
 		log.Fatalf("error connecting to the cluster, check your connectivity. %v", err)
 		return fmt.Errorf("error connecting to the cluster, check your connectivity. %w", err)

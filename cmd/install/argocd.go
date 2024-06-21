@@ -1,7 +1,7 @@
 /*
 Copyright © 2024 NAME HERE BRADLEY.SOPER@CNVRG.IO
 */
-package cmd
+package install
 
 import (
 	"fmt"
@@ -10,9 +10,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"k8s.io/apimachinery/pkg/runtime"
-
+	root "github.com/dilerous/cnvrgctl/cmd"
 	"helm.sh/helm/v3/pkg/cli"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 var (
@@ -45,7 +45,7 @@ Examples:
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("called the install argocd command function")
 
-		flags := Flags{}
+		flags := root.Flags{}
 
 		// grab the namespace from the -n flag if not specified default is used
 		ns, _ := cmd.Flags().GetString("namespace")
