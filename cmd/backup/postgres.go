@@ -21,7 +21,7 @@ import (
 // databaseCmd represents the database command
 var postgresCmd = &cobra.Command{
 	Use:   "postgres",
-	Short: "Will backup the postgres database",
+	Short: "Backup the postgres database",
 	Long: `Backs up the postgres database by performing a pg_dump
 on the running postgres pod. This command will scale down the cnvrg.io
 application, so use during a downtime window.
@@ -31,7 +31,7 @@ Examples:
 # Backups the default postgres database and files in the cnvrg namespace.
   cnvrgctl backup postgres -n cnvrg`,
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Println("database called")
+		log.Println("postgress command called")
 
 		// set result to false until a successfull backup
 		result := false
@@ -45,6 +45,9 @@ Examples:
 		// Define the key of the deployment label for the postgres deployment
 		labelFlag, _ := cmd.Flags().GetString("label")
 
+		// flag to disable scaling the pods before the backup
+		disableScaleFlag, _ := cmd.Flags().GetBool("disable-scale")
+
 		// connect to kubernetes and define clientset and rest client
 		api, err := root.ConnectToK8s()
 		if err != nil {
@@ -53,10 +56,12 @@ Examples:
 		}
 
 		// scale down the application pods to prepare for backups
-		err = root.ScaleDeployDown(api, nsFlag)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "error scaling the deployment. %v", err)
-			log.Fatalf("error scaling the deployment. %v\n", err)
+		if !disableScaleFlag {
+			err = root.ScaleDeployDown(api, nsFlag)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "error scaling the deployment. %v", err)
+				log.Fatalf("error scaling the deployment. %v\n", err)
+			}
 		}
 
 		// get the pod name from the deployment defined
@@ -96,6 +101,9 @@ func init() {
 
 	// flag to define the release name
 	postgresCmd.Flags().StringP("target", "t", "postgres", "Name of postgres deployment to backup.")
+
+	// flag to disable scaling the pods before the backup
+	postgresCmd.Flags().BoolP("disable-scale", "", false, "Disable scaling the app, cnvrg-operator and 'kiq' pods to 0 before the backup.")
 
 	// flag to define the app label key
 	postgresCmd.Flags().StringP("label", "l", "app", "Define the key of the deployment label for the postgres deployment. example: app.kubernetes.io/name")

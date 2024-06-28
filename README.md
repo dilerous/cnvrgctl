@@ -1,7 +1,7 @@
 # cnvrgctl
 cnvrg.io delivery cli tool
 
-### How to use
+## How to Install
 1. Download and install golang.
 
    `https://go.dev/doc/install`
@@ -13,8 +13,37 @@ cnvrg.io delivery cli tool
    `make mac` #Create binary for arm on MacOS
 
    `make linux` #Create binary for amd64 on Linux
+   
+## How to Use
+1. Run cnvrgctl as a normal cli tool
 
-### Minio
+2. `cnvrgctl --help` to bring up the help menu to navigate available commands.
+
+#### Backup sub-command
+Run `cnvrgctl backup` to backup the current cnvrg.io installation. This includes both the files and the Postgres database.
+
+Example:
+`cnvrgctl backup files -n cnvrg` This will backup the minio `cnvrg-storage` bucket locally to be migrated to new installs.
+
+#### Restore sub-command
+Run `cnvrgctl restore` to restore either files or the Postgres database to your new installation of cnvrg.io
+
+Example:
+Run `cnvrgctl restore files -n cnvrg` to restore the local files in the `./cnvrg-storage` folder to your new cnvrg.io installation.
+
+#### Logs sub-command
+Run `cnvrgctl logs` to pull all logs from the running pods in the namespace selected.
+
+Example:
+Run `cnvrgctl logs -n cnvrg` to grab all logs from the namespace and output the logs to a local folder called `./logs`. 
+
+#### Install sub-command
+Run `cnvrgctl install` to deploy ArgoCD, minio operator and a tenant, nginx, or sealed secrets.
+
+Example:
+Run `cnvrgctl -n argocd install argocd -d argocd.dilerous.cloud` to install ArgoCD in the `argocd` namespace while setting the ingress host to `argocd.dilerous.cloud`. 
+
+## Minio
 How to connect to the minio bucket using the `mc` cli tool.
 1. Following the deployment of the operator and tenant you need to set an alias
    to access the minio bucket. The default bucket created during installation is
