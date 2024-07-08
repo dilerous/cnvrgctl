@@ -23,24 +23,28 @@ cnvrg.io delivery cli tool
 Run `cnvrgctl backup` to backup the current cnvrg.io installation. This includes both the files and the Postgres database.
 
 Example:
+
 `cnvrgctl backup files -n cnvrg` This will backup the minio `cnvrg-storage` bucket locally to be migrated to new installs.
 
 #### Restore sub-command
 Run `cnvrgctl restore` to restore either files or the Postgres database to your new installation of cnvrg.io
 
 Example:
+
 Run `cnvrgctl restore files -n cnvrg` to restore the local files in the `./cnvrg-storage` folder to your new cnvrg.io installation.
 
 #### Logs sub-command
 Run `cnvrgctl logs` to pull all logs from the running pods in the namespace selected.
 
 Example:
+
 Run `cnvrgctl logs -n cnvrg` to grab all logs from the namespace and output the logs to a local folder called `./logs`. 
 
 #### Install sub-command
 Run `cnvrgctl install` to deploy ArgoCD, minio operator and a tenant, nginx, or sealed secrets.
 
 Example:
+
 Run `cnvrgctl -n argocd install argocd -d argocd.dilerous.cloud` to install ArgoCD in the `argocd` namespace while setting the ingress host to `argocd.dilerous.cloud`. 
 
 ## Minio

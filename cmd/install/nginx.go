@@ -19,8 +19,9 @@ import (
 var nginxCmd = &cobra.Command{
 	Use:   "nginx",
 	Short: "Installs the ingress controller, ingress-nginx",
-	Long: `Install the ingress controller nginx as an application in ArgoCD. The deployment
-will use the ingress-nginx helm chart.
+	Long: `Install the ingress controller nginx as a Helm release by default. The deployment
+will use the ingress-nginx helm chart. You can also install ingress-nginx as an ArgoCD 
+application by using the --app flag. 
 
 Usage:
   cnvrgctl install nginx [flags]
@@ -29,13 +30,16 @@ Examples:
 # Install nginx into the nginx namespace with the default values.
   cnvrgctl -n nginx install nginx
   
-# Install argocd and specify a custom chart URL.
+# Install nginx and specify a custom chart URL.
   cnvrgctl -n nginx install nginx --repo  https://github.com/nginx-helm
   
- # Install argocd and specify a helm release name.
-  cnvrgctl -n nginx install nginx --release my-nginx`,
+# Install nginx and specify a helm release name.
+  cnvrgctl -n nginx install nginx --release my-nginx
+  
+# Install nginx as an ArgoCD application. 
+  cnvrgctl -n nginx install nginx --app`,
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Println("nginx called")
+		log.Println("nginx command called")
 
 		// call the Flags structs
 		flags := root.Flags{}
@@ -121,7 +125,7 @@ func init() {
 	nginxCmd.Flags().StringP("argocd-namespace", "a", "argocd", "define the namespace for the argocd deployment.")
 }
 
-// apply the ingress nginx application yaml
+// deploy nginx using argocd
 func createNginxApp(api *root.KubernetesAPI, ns string, f root.Flags) error {
 	log.Println("createMinioValues function called")
 

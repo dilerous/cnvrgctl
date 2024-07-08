@@ -48,6 +48,12 @@ Examples:
 		// flag to disable scaling the pods before the backup
 		disableScaleFlag, _ := cmd.Flags().GetBool("disable-scale")
 
+		// flag to disable scaling the pods before the backup
+		fileLocationFlag, _ := cmd.Flags().GetString("file-location")
+
+		// flag to disable scaling the pods before the backup
+		fileNameFlag, _ := cmd.Flags().GetString("file-name")
+
 		// connect to kubernetes and define clientset and rest client
 		api, err := root.ConnectToK8s()
 		if err != nil {
@@ -79,18 +85,19 @@ Examples:
 		}
 
 		// copy the postgres backup to the local machine
-		result, err = copyDBLocally(api, nsFlag, podName)
+		result, err = copyDBLocally(api, nsFlag, podName, fileLocationFlag, fileNameFlag)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error copying the database file. %v", err)
 			log.Fatalf("error copying the database file. %v\n", err)
+		} else {
+			log.Printf("postgres backup %s saved to %s.\n", fileNameFlag, fileLocationFlag)
+			fmt.Printf("postgres backup %s saved to %s.\n", fileNameFlag, fileLocationFlag)
+
 		}
 
 		//If the backup is successful, scale back up the pods
-		if result {
+		if result && !disableScaleFlag {
 			root.ScaleDeployUp(api, nsFlag)
-		} else {
-			log.Println("backup result was set to false, there was a problem. result value: ", result)
-			fmt.Println("there was a problem with the backup, check the logs.")
 		}
 
 	},
@@ -107,6 +114,12 @@ func init() {
 
 	// flag to define the app label key
 	postgresCmd.Flags().StringP("label", "l", "app", "Define the key of the deployment label for the postgres deployment. example: app.kubernetes.io/name")
+
+	// flag to define restore location
+	postgresCmd.Flags().StringP("file-location", "f", ".", "Local location to save the postgres backup file.")
+
+	// flag to define backup file name
+	postgresCmd.Flags().StringP("file-name", "", "cnvrg-db-backup.sql", "Name of the postgres backup file.")
 }
 
 // Executes a pg dump of the postgres database by getting the postgres pod name then running
@@ -171,19 +184,28 @@ func executePostgresBackup(api *root.KubernetesAPI, pod string, nsFlag string) e
 }
 
 // copies the postgres-backup file from the pod to the local machine
-func copyDBLocally(api *root.KubernetesAPI, nsFlag string, pod string) (bool, error) {
+func copyDBLocally(api *root.KubernetesAPI, nsFlag string, pod string, location string, name string) (bool, error) {
 	log.Println("copyDBLocally function called.")
 
 	//TODO: add flag to specify location of file
 	var ( // Set the pod and namespace
 		podName    = pod
 		namespace  = nsFlag
-		filePath   = "./"
-		backupFile = "cnvrg-db-backup.sql"
+		filePath   = location + "/"
+		backupFile = name
 		clientset  = api.Client
 		command    = []string{"cat", backupFile}
 		config     = api.Config
 	)
+
+	// If the file path is not the local directory, create the directory
+	if filePath != "./" {
+		err := createDirectory(filePath)
+		if err != nil {
+			log.Printf("error creating the directory. %v\n", err)
+			fmt.Fprintf(os.Stderr, "error creating the directory. %v", err)
+		}
+	}
 
 	// Create a REST client
 	log.Println("Creating the rest client call")
@@ -242,4 +264,19 @@ func copyDBLocally(api *root.KubernetesAPI, nsFlag string, pod string) (bool, er
 	}
 
 	return true, nil
+}
+
+// create a directory
+func createDirectory(dirName string) error {
+
+	// Create a directory and any necessary parents
+	err := os.MkdirAll(dirName, 0755) // 0755 is the permission mode
+	if err != nil {
+		log.Printf("failed to create directory. %v", err)
+		return fmt.Errorf("failed to create directory. %w", err)
+	} else {
+		log.Printf("directorie(s) created successfully. %v", err)
+		fmt.Println("directorie(s) created successfully.")
+	}
+	return nil
 }
