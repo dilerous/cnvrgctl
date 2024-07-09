@@ -17,6 +17,7 @@ type KubernetesAPI struct {
 type ObjectStorage struct {
 	AccessKey  string
 	SecretKey  string
+	SessionKey string
 	Region     string
 	Endpoint   string
 	Type       string

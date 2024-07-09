@@ -52,15 +52,16 @@ to quickly create a Cobra application.`,
 			o.BucketName = bucketFlag
 		}
 
+		// define the source folder to backup too
 		sourceFlag, _ := cmd.Flags().GetString("source")
 
-		// grab the namespace from the -n flag if not specified default is used
+		// set the secret key if defined
 		skFlag, _ := cmd.Flags().GetString("secret-key")
 		if skFlag != "" {
 			o.SecretKey = skFlag
 		}
 
-		// grab the namespace from the -n flag if not specified default is used
+		// set the access key if defined
 		akFlag, _ := cmd.Flags().GetString("access-key")
 		if akFlag != "" {
 			o.AccessKey = akFlag

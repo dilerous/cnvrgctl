@@ -3,7 +3,6 @@ module github.com/dilerous/cnvrgctl
 go 1.22.1
 
 require (
-	github.com/aws/aws-sdk-go v1.54.0
 	github.com/minio/minio-go/v7 v7.0.71
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.19.0
@@ -77,7 +76,6 @@ require (
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jmoiron/sqlx v1.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect

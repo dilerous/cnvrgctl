@@ -10,9 +10,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
 	root "github.com/dilerous/cnvrgctl/cmd"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -36,11 +33,45 @@ Examples:
 		// set result to false until a successfull backup
 		result := false
 
+		//define the empty object struct
+		o := root.ObjectStorage{}
+
 		// get the name of the secret that has the object storage credentials
 		s3SecretName, _ := cmd.Flags().GetString("secret-name")
 
 		// grab the namespace from the -n flag if not specified default is used
 		nsFlag, _ := cmd.Flags().GetString("namespace")
+
+		// define the url to the minio api
+		urlFlag, _ := cmd.Flags().GetString("bucket-url")
+		o.Endpoint = urlFlag
+
+		// define the target bucket to restore the files too.
+		bucketFlag, _ := cmd.Flags().GetString("bucket")
+		if bucketFlag != "cnvrg-storage" {
+			o.BucketName = bucketFlag
+		}
+
+		// set the secret key if defined
+		skFlag, _ := cmd.Flags().GetString("secret-key")
+		if skFlag != "" {
+			o.SecretKey = skFlag
+		}
+
+		// set the access key if defined
+		akFlag, _ := cmd.Flags().GetString("access-key")
+		if akFlag != "" {
+			o.AccessKey = akFlag
+		}
+
+		sessFlag, _ := cmd.Flags().GetString("session-key")
+		if sessFlag != "" {
+			o.SessionKey = sessFlag
+		}
+
+		if urlFlag == "s3.amazonaws.com" {
+			listS3Bucket(o)
+		}
 
 		// connect to kubernetes and define clientset and rest client
 		api, err := root.ConnectToK8s()
@@ -81,7 +112,7 @@ Examples:
 			}
 
 		case "aws":
-			err = connectToS3(objectData)
+			//err = connectToS3(objectData)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "failed to connect to the s3 bucket. %v", err)
 				log.Printf("failed to connect to the s3 bucket. %v", err)
@@ -112,48 +143,68 @@ func init() {
 
 	// flag to define the release name
 	filesCmd.Flags().StringP("secret-name", "", "cp-object-storage", "Define the secret name for the S3 bucket credentials.")
+
+	// flag to define the secret for the object storage credentials
+	filesCmd.Flags().StringP("secret-key", "k", "", "define the secret key for the S3 bucket credentials. (required if bucket, access-key and minio-url is set)")
+
+	// flag to define the secret for the object storage credentials
+	filesCmd.Flags().StringP("access-key", "a", "", "define the access key for the S3 bucket credentials. (required if secret-key, bucket and minio-url is set)")
+
+	// flag to define the session key for the object storage credentials
+	filesCmd.Flags().StringP("session-key", "", "", "define the session key for the S3 bucket credentials.")
+
+	// flag to define the backup bucket target
+	filesCmd.Flags().StringP("bucket", "b", "cnvrg-storage", "define the bucket to restore the files from. (required if secret-key, access-key and minio-url is set)")
+
+	// flag to define the backup bucket target
+	filesCmd.Flags().StringP("bucket-url", "u", "", "define the url to the bucket api. (required if secret-key, access-key and bucket is set)")
+
+	// flag to define the source files
+	filesCmd.Flags().StringP("source", "s", "cnvrg-storage", "define the source folder to backup files too locally.")
+
+	// if any of the flags defined are set, they all must be set
+	filesCmd.MarkFlagsRequiredTogether("secret-key", "access-key", "bucket", "bucket-url")
 }
 
-// connect to an AWS S3 bucket using the AWS SDK
-func connectToS3(o *root.ObjectStorage) error {
-	log.Println("connectToS3 function called.")
+// list S3 bucket for testing
+func listS3Bucket(o root.ObjectStorage) {
+	log.Println("listS3Bucket function called")
+	// Define your S3 credentials
+	accessKeyID := o.AccessKey
+	secretAccessKey := o.SecretKey
+	sessionKey := o.SessionKey
+	endpoint := "s3.amazonaws.com" // For AWS S3, use "s3.amazonaws.com". For MinIO, use your MinIO server address.
+	useSSL := true                 // For secure connection use true, otherwise false.
+	bucketName := o.BucketName
 
-	// Initialize a session that the SDK will use to load
-	// credentials from the shared credentials file ~/.aws/credentials
-	sess, err := session.NewSession(&aws.Config{Region: aws.String(o.Region)}, nil)
-	if err != nil {
-		log.Printf("the copy failed. %v", err)
-		return fmt.Errorf("the copy failed. %w", err)
-	}
-
-	// Create S3 client
-	s3Client := s3.New(sess)
-
-	// List buckets
-	buckets, err := s3Client.ListBuckets(&s3.ListBucketsInput{})
-	if err != nil {
-		log.Printf("error listing the buckets, check your credentials. %v", err)
-		return fmt.Errorf("the copy failed. %w", err)
-	}
-
-	log.Println("Buckets:")
-	for _, bucket := range buckets.Buckets {
-		log.Println(*bucket.Name)
-	}
-
-	// Get object from bucket
-	obj, err := s3Client.GetObject(&s3.GetObjectInput{
-		Bucket: aws.String(o.BucketName),
-		Key:    aws.String(o.AccessKey),
+	// Initialize MinIO client object
+	minioClient, err := minio.New(endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, sessionKey),
+		Secure: useSSL,
 	})
 	if err != nil {
-		log.Printf("the copy failed. %v", err)
-		return fmt.Errorf("the copy failed. %w", err)
+		log.Fatalln(err)
 	}
 
-	log.Println("Object:")
-	log.Println(obj)
-	return nil
+	ctx := context.Background()
+
+	// List objects in the bucket
+	objectCh := minioClient.ListObjects(ctx, bucketName, minio.ListObjectsOptions{
+		Recursive: true,
+	})
+
+	fmt.Println("Objects in bucket", bucketName)
+	for object := range objectCh {
+		if object.Err != nil {
+			log.Fatalln(object.Err)
+		}
+		fmt.Println("Bucket Name: ", bucketName)
+		fmt.Println("Name:         ", object.Key)
+		fmt.Println("Last modified:", object.LastModified)
+		fmt.Println("Size:         ", object.Size)
+		fmt.Println("Storage class:", object.StorageClass)
+		fmt.Println("")
+	}
 }
 
 // TODO: check if useSSL = false, conslidate with get bucket function

@@ -95,7 +95,7 @@ Examples:
 
 		}
 
-		//If the backup is successful, scale back up the pods
+		//If the backup is successful and disable-scale flag is false, scale back up the pods
 		if result && !disableScaleFlag {
 			root.ScaleDeployUp(api, nsFlag)
 		}
