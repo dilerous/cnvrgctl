@@ -131,6 +131,7 @@ func createNginxApp(api *root.KubernetesAPI, ns string, f root.Flags) error {
 
 	// define the application yaml
 	app := &unstructured.Unstructured{}
+
 	app.Object = map[string]interface{}{
 		"apiVersion": "argoproj.io/v1alpha1",
 		"kind":       "Application",
@@ -194,16 +195,12 @@ func createNginxApp(api *root.KubernetesAPI, ns string, f root.Flags) error {
 	return nil
 }
 
-// create the values for the helm install
+// create the values for the nginx helm install
 func createNginxValues(f root.Flags) (map[string]interface{}, error) {
 
 	// define default values
 	vals := map[string]interface{}{
-
 		"controller": map[string]interface{}{
-			"service": map[string]interface{}{
-				"externalIPs": []string{f.ExternalIps},
-			},
 			"config": map[string]interface{}{
 				"proxy-body-size": "128m",
 			},
@@ -211,6 +208,37 @@ func createNginxValues(f root.Flags) (map[string]interface{}, error) {
 				"default": true,
 			},
 		},
+	}
+
+	if f.ExternalIps != "" {
+		// Set the externalIps
+		// Retrieve the controller map from vals and ensure its type
+		controller, ok := vals["controller"].(map[string]interface{})
+		if !ok {
+			// Handle the case where vals["controller"] is not of the expected type
+			panic("vals[\"controller\"] is not a map[string]interface{}")
+		}
+
+		// Check if controller["service"] exists and is not nil
+		if controller["service"] == nil {
+			// Handle case where controller["service"] is nil (perhaps initialize it)
+			controller["service"] = make(map[string]interface{})
+		}
+
+		// Now type assert service to map[string]interface{}
+		service, ok := controller["service"].(map[string]interface{})
+		if !ok {
+			panic("controller[\"service\"] is not a map[string]interface{}")
+		}
+
+		// Proceed with updating service["externalIPs"]
+		service["externalIPs"] = []string{f.ExternalIps}
+
+		// Assign the modified service map back to the controller map
+		controller["service"] = service
+
+		// Assign the modified controller map back to vals
+		vals["controller"] = controller
 	}
 
 	//return the values file and no error

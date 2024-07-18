@@ -18,10 +18,12 @@ type ObjectStorage struct {
 	AccessKey  string
 	SecretKey  string
 	SessionKey string
+	SecretName string
 	Region     string
 	Endpoint   string
 	Type       string
 	BucketName string
+	UseSSL     bool
 	Namespace  string
 }
 
@@ -36,4 +38,6 @@ type Flags struct {
 	ExternalIps    string
 	App            bool
 	Argocd         string
+	Tls            bool
+	ClusterIssuer  string
 }

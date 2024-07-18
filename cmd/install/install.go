@@ -34,6 +34,7 @@ func init() {
 }
 
 func loadChart(f root.Flags) (*chart.Chart, error) {
+	log.Println("calling the loadChart function")
 
 	// Set path to helm repository and chart name
 	var chartPath = f.Repo

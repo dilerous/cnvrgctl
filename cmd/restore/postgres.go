@@ -33,11 +33,11 @@ restore the Postgres database.
 
 Examples:
 
-# Backups the default postgres database and files in the cnvrg namespace.
-  cnvrgctl migrate restore postgres -n cnvrg
+# Restores the Postgres database to the postgres pod specified by the namespace.
+  cnvrgctl restore postgres -n cnvrg
 
 # Specify namespace, deployment label key, and deployment name.
-  cnvrgctl migrate restore postgres --target postgres-ha --label app.kubernetes.io/name -n cnvrg`,
+  cnvrgctl restore postgres --target postgres-ha --label app.kubernetes.io/name -n cnvrg`,
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("postgres called")
 

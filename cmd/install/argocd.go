@@ -25,7 +25,7 @@ var argocdCmd = &cobra.Command{
 	Use:   "argocd",
 	Short: "Installs the gitops tool, argocd",
 	Long: `Install the gitops tool argocd as a helm release. The deployment
-will use the default ingress controller for external access.   
+will use the default ingress controller for external access.
 
 Usage:
   cnvrgctl install argocd [flags]
@@ -33,10 +33,10 @@ Usage:
 Examples:
 # Install argocd into the argocd namespace with the default values.
   cnvrgctl -n argocd install argocd
-  
+
 # Perform a dry run install of argocd.
   cnvrgctl -n argocd install argocd --dry-run
-  
+
 # Install argocd and specify a custom chart URL.
   cnvrgctl -n argocd install argocd --repo  https://github.com/argo-helm
 
@@ -45,6 +45,7 @@ Examples:
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("called the install argocd command function")
 
+		// define the Flags struct
 		flags := root.Flags{}
 
 		// grab the namespace from the -n flag if not specified default is used
@@ -62,6 +63,12 @@ Examples:
 		// Flag to set the domain of the argocd deployment
 		flags.Domain, _ = cmd.Flags().GetString("domain")
 
+		// Flag to enable tls support for the ingress object
+		flags.Tls, _ = cmd.Flags().GetBool("enable-tls")
+
+		// Flag to define the cert-manager cluster-issuer
+		flags.ClusterIssuer, _ = cmd.Flags().GetString("cluster-issuer")
+
 		// Flag to set if dry-run should be ran for the install
 		flags.DryRun, _ = cmd.Flags().GetBool("dry-run")
 
@@ -73,7 +80,7 @@ Examples:
 		}
 
 		// create the default values file
-		vals, _ := createValues(flags.Domain)
+		vals, _ := createValues(&flags)
 
 		// Install the helm chart, specifiy namespace and the release name for the install
 		err = deployHelmChart(ns, chart, flags, vals)
@@ -102,17 +109,23 @@ func init() {
 	// flag to define the argocd domain for install
 	argocdCmd.Flags().StringP("domain", "d", "argocd.example.com", "define the domain for the argocd deployment.")
 
+	// Flag to enable tls support for the ingress object
+	argocdCmd.Flags().Bool("enable-tls", false, "enable tls for the ingress object.")
+
+	// Flag to define the cert-manager cluster issuer
+	argocdCmd.Flags().StringP("cluster-issuer", "i", "", "define a cert-manager clusterIssuer.")
+
 	// Adds the flag -t --tar to the logs command this is local
 	argocdCmd.Flags().BoolP("dry-run", "", false, "Perform a dry run of the install of argocd.")
 }
 
-func createValues(domain string) (map[string]interface{}, error) {
+func createValues(f *root.Flags) (map[string]interface{}, error) {
+	log.Println("called the createValues function")
 
-	// define values
-
+	// define the default values
 	vals := map[string]interface{}{
 		"global": map[string]interface{}{
-			"domain": domain,
+			"domain": f.Domain,
 		},
 
 		"server": map[string]interface{}{
@@ -132,6 +145,31 @@ func createValues(domain string) (map[string]interface{}, error) {
 				},
 			},
 		},
+	}
+
+	// check if the enable-tls flag has been called
+	if f.Tls {
+		// Update insecure to false
+		vals["configs"].(map[string]interface{})["params"].(map[string]interface{})["server"].(map[string]interface{})["insecure"] = false
+
+		//add in the annotation for clusterIssuer/issuer
+		newAnnotationKey := "cert-manager.io/cluster-issuer"
+		newAnnotationValue := f.ClusterIssuer
+
+		vals["server"].(map[string]interface{})["ingress"].(map[string]interface{})["annotations"].(map[string]interface{})[newAnnotationKey] = newAnnotationValue
+
+		// Create the TLS configuration
+		tls := []map[string]interface{}{
+			{
+				"secretName": "argo-ui-tls",
+				"hosts": []string{
+					f.Domain,
+				},
+			},
+		}
+
+		// Add TLS to vals
+		vals["server"].(map[string]interface{})["ingress"].(map[string]interface{})["tls"] = tls
 	}
 	return vals, nil
 }

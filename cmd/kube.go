@@ -12,6 +12,9 @@ import (
 
 // grabs the secret, key and endpoint from the cp-object-secret
 func GetObjectSecret(api *KubernetesAPI, name string, namespace string) (*ObjectStorage, error) {
+	log.Println("GetObjectSecret function called")
+
+	// set the ObjectStorage struct
 	object := ObjectStorage{}
 
 	// Get the Secret

@@ -28,48 +28,39 @@ Examples:
 # Backups the files stored in the bucket in the cnvrg namespace.
   cnvrgctl backup files -n cnvrg`,
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Println("restore files called")
+		log.Println("restore files command called")
 
 		// set result to false until a successfull backup
 		result := false
 
-		//define the empty object struct
+		//define the empty ObjectStorage struct
 		o := root.ObjectStorage{}
 
 		// get the name of the secret that has the object storage credentials
+		o.SecretName, _ = cmd.Flags().GetString("secret-name")
 		s3SecretName, _ := cmd.Flags().GetString("secret-name")
 
 		// grab the namespace from the -n flag if not specified default is used
+		o.Namespace, _ = cmd.Flags().GetString("namespace")
 		nsFlag, _ := cmd.Flags().GetString("namespace")
 
 		// define the url to the minio api
-		urlFlag, _ := cmd.Flags().GetString("bucket-url")
-		o.Endpoint = urlFlag
+		o.Endpoint, _ = cmd.Flags().GetString("bucket-url")
 
 		// define the target bucket to restore the files too.
-		bucketFlag, _ := cmd.Flags().GetString("bucket")
-		if bucketFlag != "cnvrg-storage" {
-			o.BucketName = bucketFlag
-		}
+		o.BucketName, _ = cmd.Flags().GetString("bucket")
 
 		// set the secret key if defined
-		skFlag, _ := cmd.Flags().GetString("secret-key")
-		if skFlag != "" {
-			o.SecretKey = skFlag
-		}
+		o.SecretKey, _ = cmd.Flags().GetString("secret-key")
 
 		// set the access key if defined
-		akFlag, _ := cmd.Flags().GetString("access-key")
-		if akFlag != "" {
-			o.AccessKey = akFlag
-		}
+		o.AccessKey, _ = cmd.Flags().GetString("access-key")
 
-		sessFlag, _ := cmd.Flags().GetString("session-key")
-		if sessFlag != "" {
-			o.SessionKey = sessFlag
-		}
+		// set the session key if defined
+		o.SessionKey, _ = cmd.Flags().GetString("session-key")
 
-		if urlFlag == "s3.amazonaws.com" {
+		if o.Endpoint == "s3.amazonaws.com" {
+			o.UseSSL = true
 			listS3Bucket(o)
 		}
 
@@ -130,7 +121,7 @@ Examples:
 
 		//If the backup is successful, scale back up the pods
 		if result {
-			root.ScaleDeployUp(api, nsFlag)
+			root.ScaleDeployUp(api, o.Namespace)
 		} else {
 			log.Println("backup result was set to false, there was a problem. result value: ", result)
 			fmt.Println("there was a problem with the backup, check the logs.")
@@ -157,7 +148,7 @@ func init() {
 	filesCmd.Flags().StringP("bucket", "b", "cnvrg-storage", "define the bucket to restore the files from. (required if secret-key, access-key and minio-url is set)")
 
 	// flag to define the backup bucket target
-	filesCmd.Flags().StringP("bucket-url", "u", "", "define the url to the bucket api. (required if secret-key, access-key and bucket is set)")
+	filesCmd.Flags().StringP("bucket-url", "u", "s3.amazonaws.com", "define the url to the bucket api. (required if secret-key, access-key and bucket is set)")
 
 	// flag to define the source files
 	filesCmd.Flags().StringP("source", "s", "cnvrg-storage", "define the source folder to backup files too locally.")
@@ -167,14 +158,16 @@ func init() {
 }
 
 // list S3 bucket for testing
+// TODO: create function that sets useSSL based on url
 func listS3Bucket(o root.ObjectStorage) {
 	log.Println("listS3Bucket function called")
-	// Define your S3 credentials
+
+	// Define your bucket credentials
 	accessKeyID := o.AccessKey
 	secretAccessKey := o.SecretKey
 	sessionKey := o.SessionKey
-	endpoint := "s3.amazonaws.com" // For AWS S3, use "s3.amazonaws.com". For MinIO, use your MinIO server address.
-	useSSL := true                 // For secure connection use true, otherwise false.
+	endpoint := o.Endpoint // For AWS S3, use "s3.amazonaws.com". For MinIO, use your MinIO server address.
+	useSSL := o.UseSSL     // For secure connection use true, otherwise false.
 	bucketName := o.BucketName
 
 	// Initialize MinIO client object
@@ -186,10 +179,8 @@ func listS3Bucket(o root.ObjectStorage) {
 		log.Fatalln(err)
 	}
 
-	ctx := context.Background()
-
 	// List objects in the bucket
-	objectCh := minioClient.ListObjects(ctx, bucketName, minio.ListObjectsOptions{
+	objectCh := minioClient.ListObjects(context.Background(), bucketName, minio.ListObjectsOptions{
 		Recursive: true,
 	})
 
