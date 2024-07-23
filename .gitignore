@@ -3,11 +3,8 @@ cnvrg-db-backup.sql
 cnvrgctl-logs.txt
 /bin/cnvrgctl
 cnvrg-storage/
-cmd/logs/logs
-cmd/logs.tar.gz
 logs.tar.gz
 .gitignore
 c.out
 .DS_Store
-
 dist/
