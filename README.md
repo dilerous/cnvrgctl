@@ -2,11 +2,18 @@
 cnvrg.io delivery cli tool
 
 ## How to Install
-1. Download the binary from `releases`:
+1. Download the binary from `releases`.
 
 `https://github.com/dilerous/cnvrgctl/releases`
 
-#### Build from source
+#### Install using Homebrew
+1. `brew tap dilerous/homebrew-dilerous`
+
+2. `brew install cnvrgctl`
+
+3. `cnvrgctl --help`
+
+#### Build from Source
 1. Download and install golang.
 
    `https://go.dev/doc/install`
@@ -18,6 +25,8 @@ cnvrg.io delivery cli tool
    `make mac` #Create binary for arm on MacOS
 
    `make linux` #Create binary for amd64 on Linux
+
+4. `cnvrgctl --help`
 
 ## How to Use
 1. Run cnvrgctl as a normal cli tool

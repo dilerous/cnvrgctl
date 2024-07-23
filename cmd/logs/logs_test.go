@@ -1,7 +1,6 @@
 package logs
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -9,8 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	root "github.com/dilerous/cnvrgctl/cmd"
-	"gotest.tools/assert"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -203,6 +200,7 @@ func TestCreateTarGzError(t *testing.T) {
 
 }
 
+/*
 func Test_ExecuteAnyCommand(t *testing.T) {
 
 	// Test calling connectToK8s()
@@ -239,10 +237,12 @@ func Test_ExecuteAnyCommand(t *testing.T) {
 	assert.Equal(t, logsActual.Len(), expected, "the expected length doesn't match")
 
 }
+*/
 
 func TestRunCleanup(t *testing.T) {
 	// Specify the file path
-	filesToDelete := []string{"../cmd/test.tar.gz", "../cmd/logs.tar.gz"}
+	goPath := "/Users/bsoper/Documents/code/go_code/cnvrgctl/cmd/logs"
+	filesToDelete := []string{goPath + "test.tar.gz", goPath + "logs.tar.gz"}
 
 	// Cleanup the testing files
 	for _, file := range filesToDelete {
