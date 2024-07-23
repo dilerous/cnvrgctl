@@ -32,7 +32,7 @@ Usage:
 
 Examples:
 # Install argocd into the argocd namespace with the default values.
-  cnvrgctl -n argocd install argocd
+  cnvrgctl -n argocd install argocd -n argocd
 
 # Perform a dry run install of argocd.
   cnvrgctl -n argocd install argocd --dry-run
@@ -41,7 +41,13 @@ Examples:
   cnvrgctl -n argocd install argocd --repo  https://github.com/argo-helm
 
 # Install with a user specific domain.
-  cnvrgctl -n argocd install argocd -d argocd.dilerous.cloud`,
+  cnvrgctl -n argocd install argocd --domain argocd.dilerous.cloud
+  
+# Install with a tls enabled, the secret that will be used is argo-ui-tls.
+  cnvrgctl -n argocd install argocd -d argocd.dilerous.cloud --enable-tls
+  
+# Install with a tls enabled, and a cert-manager cluserIssuer defined.
+  cnvrgctl -n argocd install argocd -d argocd.dilerous.cloud --enable-tls --cluster-issuer letsencrypt-prod`,
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("called the install argocd command function")
 
@@ -147,16 +153,10 @@ func createValues(f *root.Flags) (map[string]interface{}, error) {
 		},
 	}
 
-	// check if the enable-tls flag has been called
+	// check if the enable-tls flag has been set to true
 	if f.Tls {
 		// Update insecure to false
 		vals["configs"].(map[string]interface{})["params"].(map[string]interface{})["server"].(map[string]interface{})["insecure"] = false
-
-		//add in the annotation for clusterIssuer/issuer
-		newAnnotationKey := "cert-manager.io/cluster-issuer"
-		newAnnotationValue := f.ClusterIssuer
-
-		vals["server"].(map[string]interface{})["ingress"].(map[string]interface{})["annotations"].(map[string]interface{})[newAnnotationKey] = newAnnotationValue
 
 		// Create the TLS configuration
 		tls := []map[string]interface{}{
@@ -167,9 +167,17 @@ func createValues(f *root.Flags) (map[string]interface{}, error) {
 				},
 			},
 		}
-
 		// Add TLS to vals
 		vals["server"].(map[string]interface{})["ingress"].(map[string]interface{})["tls"] = tls
+	}
+
+	if f.ClusterIssuer != "" {
+		//add in the annotation for clusterIssuer/issuer
+		newAnnotationKey := "cert-manager.io/cluster-issuer"
+		newAnnotationValue := f.ClusterIssuer
+
+		//Add the annotation for cert-manager
+		vals["server"].(map[string]interface{})["ingress"].(map[string]interface{})["annotations"].(map[string]interface{})[newAnnotationKey] = newAnnotationValue
 	}
 	return vals, nil
 }

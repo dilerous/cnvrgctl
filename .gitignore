@@ -9,3 +9,5 @@ logs.tar.gz
 .gitignore
 c.out
 .DS_Store
+
+dist/
