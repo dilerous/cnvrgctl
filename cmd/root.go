@@ -37,7 +37,13 @@ also can be used to migrate exisiting deployments or install cnvrg.io classic.
 Examples:
 
 # Backups the default postgres database and files in the cnvrg namespace.
-  cnvrgctl migrate restore postgres -n cnvrg`,
+  cnvrgctl backup postgres -n cnvrg
+  
+# Backups the minio bucket in the cnvrg namespace.
+  cnvrgctl backup files -n cnvrg
+  
+# Grab pod logs from the cnvrg namespace.
+  cnvrgctl logs -n cnvrg`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
