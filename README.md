@@ -2,7 +2,7 @@
 cnvrg.io delivery cli tool
 
 ## How to Install
-1. Download the binary from releases:
+1. Download the binary from `releases`:
 
 `https://github.com/dilerous/cnvrgctl/releases`
 
