@@ -41,3 +41,6 @@ brews:
     commit_author:
       name: Brad Soper
       email: brad.soper@gmail.com
+    repository:
+      name: homebrew-dilerous
+      owner: dilerous

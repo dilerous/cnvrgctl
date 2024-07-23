@@ -2,6 +2,11 @@
 cnvrg.io delivery cli tool
 
 ## How to Install
+1. Download the binary from releases:
+
+`https://github.com/dilerous/cnvrgctl/releases`
+
+#### Build from source
 1. Download and install golang.
 
    `https://go.dev/doc/install`
@@ -13,7 +18,7 @@ cnvrg.io delivery cli tool
    `make mac` #Create binary for arm on MacOS
 
    `make linux` #Create binary for amd64 on Linux
-   
+
 ## How to Use
 1. Run cnvrgctl as a normal cli tool
 
@@ -38,14 +43,14 @@ Run `cnvrgctl logs` to pull all logs from the running pods in the namespace sele
 
 Example:
 
-Run `cnvrgctl logs -n cnvrg` to grab all logs from the namespace and output the logs to a local folder called `./logs`. 
+Run `cnvrgctl logs -n cnvrg` to grab all logs from the namespace and output the logs to a local folder called `./logs`.
 
 #### Install sub-command
 Run `cnvrgctl install` to deploy ArgoCD, minio operator and a tenant, nginx, or sealed secrets.
 
 Example:
 
-Run `cnvrgctl -n argocd install argocd -d argocd.dilerous.cloud` to install ArgoCD in the `argocd` namespace while setting the ingress host to `argocd.dilerous.cloud`. 
+Run `cnvrgctl -n argocd install argocd -d argocd.dilerous.cloud` to install ArgoCD in the `argocd` namespace while setting the ingress host to `argocd.dilerous.cloud`.
 
 ## Minio
 How to connect to the minio bucket using the `mc` cli tool.
