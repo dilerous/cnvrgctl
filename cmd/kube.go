@@ -76,6 +76,34 @@ func GetObjectSecret(api *KubernetesAPI, name string, namespace string) (*Object
 	return &object, nil
 }
 
+// Get the Redis Password from the secret name defined in "n" and namespace "ns"
+func GetRedisPassword(api *KubernetesAPI, n string, ns string) (string, error) {
+	log.Println("called the GetRedisPassword function")
+
+	// set the variables for namespace, name and password
+	var (
+		namespace = ns
+		name      = n
+		password  = ""
+	)
+
+	// Get the Redis K8s Secret
+	secret, err := api.Client.CoreV1().Secrets(namespace).Get(context.Background(), name, v1.GetOptions{})
+	if err != nil {
+		log.Printf("error getting the secret, does it exist? %v", err)
+		return "", fmt.Errorf("error getting the secret, does it exist? %w ", err)
+	}
+
+	// Get the Secret data
+	endpoint, ok := secret.Data["CNVRG_REDIS_PASSWORD"]
+	password = string(endpoint)
+	if !ok {
+		log.Printf("error getting the key CNVRG_STORAGE_ENDPOINT, does it exist? %v", err)
+		return "", fmt.Errorf("error getting the key CNVRG_REDIS_PASSWORD, does it exist? %w ", err)
+	}
+	return password, nil
+}
+
 // Gathers the name of the pod based on the label and deployment name passed
 // TODO: make sense to make a struct for this?
 func GetDeployPod(api *KubernetesAPI, targetFlag string, nsFlag string, labelTag string) (string, error) {

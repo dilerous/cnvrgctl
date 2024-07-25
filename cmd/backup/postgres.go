@@ -51,7 +51,7 @@ Examples:
 		// flag to disable scaling the pods before the backup
 		fileLocationFlag, _ := cmd.Flags().GetString("file-location")
 
-		// flag to disable scaling the pods before the backup
+		// flag to define backup file name
 		fileNameFlag, _ := cmd.Flags().GetString("file-name")
 
 		// connect to kubernetes and define clientset and rest client
@@ -90,8 +90,8 @@ Examples:
 			fmt.Fprintf(os.Stderr, "error copying the database file. %v", err)
 			log.Fatalf("error copying the database file. %v\n", err)
 		} else {
-			log.Printf("postgres backup %s saved to %s.\n", fileNameFlag, fileLocationFlag)
 			fmt.Printf("postgres backup %s saved to %s.\n", fileNameFlag, fileLocationFlag)
+			log.Printf("postgres backup %s saved to %s.\n", fileNameFlag, fileLocationFlag)
 
 		}
 
@@ -183,16 +183,17 @@ func executePostgresBackup(api *root.KubernetesAPI, pod string, nsFlag string) e
 	return nil
 }
 
-// copies the postgres-backup file from the pod to the local machine
-func copyDBLocally(api *root.KubernetesAPI, nsFlag string, pod string, location string, name string) (bool, error) {
+// copies the backup file from the pod to the local machine
+// Function takes the namespace "ns", the pod name "p", local file location "l" and the file name "f"
+func copyDBLocally(api *root.KubernetesAPI, ns string, p string, l string, f string) (bool, error) {
 	log.Println("copyDBLocally function called.")
 
 	//TODO: add flag to specify location of file
 	var ( // Set the pod and namespace
-		podName    = pod
-		namespace  = nsFlag
-		filePath   = location + "/"
-		backupFile = name
+		podName    = p
+		namespace  = ns
+		filePath   = l + "/"
+		backupFile = f
 		clientset  = api.Client
 		command    = []string{"cat", backupFile}
 		config     = api.Config
@@ -202,8 +203,8 @@ func copyDBLocally(api *root.KubernetesAPI, nsFlag string, pod string, location 
 	if filePath != "./" {
 		err := createDirectory(filePath)
 		if err != nil {
-			log.Printf("error creating the directory. %v\n", err)
 			fmt.Fprintf(os.Stderr, "error creating the directory. %v", err)
+			log.Printf("error creating the directory. %v\n", err)
 		}
 	}
 

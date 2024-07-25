@@ -239,10 +239,10 @@ func Test_ExecuteAnyCommand(t *testing.T) {
 }
 */
 
+/*
 func TestRunCleanup(t *testing.T) {
 	// Specify the file path
-	goPath := "/Users/bsoper/Documents/code/go_code/cnvrgctl/cmd/logs"
-	filesToDelete := []string{goPath + "test.tar.gz", goPath + "logs.tar.gz"}
+	filesToDelete := []string{"test.tar.gz", "logs.tar.gz"}
 
 	// Cleanup the testing files
 	for _, file := range filesToDelete {
@@ -254,6 +254,7 @@ func TestRunCleanup(t *testing.T) {
 	}
 }
 
+/*
 /*
 
 	fakeKubeconfig := []byte(`{

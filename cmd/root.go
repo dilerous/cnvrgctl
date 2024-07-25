@@ -28,8 +28,9 @@ var (
 
 // rootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
-	Use:   "cnvrgctl",
-	Short: "cnvrg.io delivery tool for cnvrg deployment maintenance.",
+	Use:     "cnvrgctl",
+	Version: Version,
+	Short:   "cnvrg.io delivery tool for cnvrg deployment maintenance.",
 	Long: `cnvrg.io delivery tool for cnvrg deployment maintenance. The 
 cnvrg.io cli tool can be used to backup, migrate and install cnvrg.io. The tool
 also can be used to migrate exisiting deployments or install cnvrg.io classic.

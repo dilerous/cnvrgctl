@@ -2,9 +2,19 @@
 cnvrg.io delivery cli tool
 
 ## How to Install
+
+#### Install the binary
 1. Download the binary from `releases`.
 
 `https://github.com/dilerous/cnvrgctl/releases`
+
+2. Untar the file and move to your `$PATH`.
+
+`tar -xzf <distro-architecture>.tar.gz`
+
+`mv cnvrgctl /usr/local/bin`
+
+3. `cnvrgctl --help`
 
 #### Install using Homebrew
 1. `brew tap dilerous/homebrew-dilerous`
