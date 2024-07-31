@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"log"
 	"time"
@@ -76,34 +77,6 @@ func GetObjectSecret(api *KubernetesAPI, name string, namespace string) (*Object
 	return &object, nil
 }
 
-// Get the Redis Password from the secret name defined in "n" and namespace "ns"
-func GetRedisPassword(api *KubernetesAPI, n string, ns string) (string, error) {
-	log.Println("called the GetRedisPassword function")
-
-	// set the variables for namespace, name and password
-	var (
-		namespace = ns
-		name      = n
-		password  = ""
-	)
-
-	// Get the Redis K8s Secret
-	secret, err := api.Client.CoreV1().Secrets(namespace).Get(context.Background(), name, v1.GetOptions{})
-	if err != nil {
-		log.Printf("error getting the secret, does it exist? %v", err)
-		return "", fmt.Errorf("error getting the secret, does it exist? %w ", err)
-	}
-
-	// Get the Secret data
-	endpoint, ok := secret.Data["CNVRG_REDIS_PASSWORD"]
-	password = string(endpoint)
-	if !ok {
-		log.Printf("error getting the key CNVRG_STORAGE_ENDPOINT, does it exist? %v", err)
-		return "", fmt.Errorf("error getting the key CNVRG_REDIS_PASSWORD, does it exist? %w ", err)
-	}
-	return password, nil
-}
-
 // Gathers the name of the pod based on the label and deployment name passed
 // TODO: make sense to make a struct for this?
 func GetDeployPod(api *KubernetesAPI, targetFlag string, nsFlag string, labelTag string) (string, error) {
@@ -135,6 +108,74 @@ func GetDeployPod(api *KubernetesAPI, targetFlag string, nsFlag string, labelTag
 	// grab the first pod name in the list
 	podName := pods.Items[0].Name
 	return podName, nil
+}
+
+// Get the Redis Password data from the secret
+// argument secret name defined in "n" and namespace "ns" and the RedisSecret struct as "r"
+func GetRedisPassword(api *KubernetesAPI, n string, ns string, r *RedisSecret) (*RedisSecret, error) {
+	log.Println("called the GetRedisPassword function")
+
+	// set the variables for namespace, name and ok
+	var (
+		namespace = ns
+		name      = n
+		ok        = false
+	)
+
+	// Get the Redis K8s Secret
+	secret, err := api.Client.CoreV1().Secrets(namespace).Get(context.Background(), name, v1.GetOptions{})
+	if err != nil {
+		log.Printf("error getting the secret, does it exist? %v", err)
+		return r, fmt.Errorf("error getting the secret, does it exist? %w ", err)
+	}
+
+	// Get the password from the key CNVRG_REDIS_PASSWORD
+	redisPassword, ok := secret.Data["CNVRG_REDIS_PASSWORD"]
+	if !ok {
+		log.Printf("error getting the key CNVRG_REDIS_PASSWORD, does it exist? %v", err)
+		return r, fmt.Errorf("error getting the key CNVRG_REDIS_PASSWORD, does it exist? %w ", err)
+	}
+
+	// Encode the value to base64 and return as a string
+	r.RedisPassword = base64.StdEncoding.EncodeToString(redisPassword)
+	if !ok {
+		log.Printf("error getting the key CNVRG_REDIS_PASSWORD, does it exist? %v", err)
+		return r, fmt.Errorf("error getting the key CNVRG_REDIS_PASSWORD, does it exist? %w ", err)
+	}
+
+	// Get the data from the redis.conf key from the secret
+	redisConf, ok := secret.Data["redis.conf"]
+	if !ok {
+		log.Printf("error getting the key redis.conf, does it exist? %v", err)
+		return r, fmt.Errorf("error getting the key redis.conf, does it exist? %w ", err)
+	}
+
+	// Encode the value to base64
+	r.RedisConf = base64.StdEncoding.EncodeToString([]byte(redisConf))
+	if !ok {
+		log.Printf("error getting the key CNVRG_REDIS_PASSWORD, does it exist? %v", err)
+		return r, fmt.Errorf("error getting the key CNVRG_REDIS_PASSWORD, does it exist? %w ", err)
+	}
+
+	// Get the url from the key REDIS_URL
+	redisUrl, ok := secret.Data["REDIS_URL"]
+	if !ok {
+		log.Printf("error getting the key REDIS_URL, does it exist? %v", err)
+		return r, fmt.Errorf("error getting the key REDIS_URL, does it exist? %w ", err)
+	}
+
+	// return the decoded value of the redisURL
+	r.RedisUrl = string(redisUrl)
+	if !ok {
+		log.Printf("error getting the key REDIS_URL, does it exist? %v", err)
+		return r, fmt.Errorf("error getting the key REDIS_URL, does it exist? %w ", err)
+	}
+
+	// Print the password to screen
+	fmt.Printf("the redis database password is, '%s'\n", r.RedisPassword)
+
+	// Return the RedisSecret struct and no error
+	return r, nil
 }
 
 // get the pod name from the deployment this will be passed to executeBackup function
@@ -221,5 +262,22 @@ func ScaleDeployDown(api *KubernetesAPI, ns string) error {
 	//TODO: add a check if all replicas = 0
 	fmt.Println("waiting for pods to finish terminating...")
 	time.Sleep(10 * time.Second)
+	return nil
+}
+
+// Delete a pod
+func DeletePod(api *KubernetesAPI, ns string, p string) error {
+
+	var (
+		// Set client, pod name and namespace
+		clientset = api.Client
+		namespace = ns
+		podName   = p
+	)
+	err := clientset.CoreV1().Pods(namespace).Delete(context.TODO(), podName, v1.DeleteOptions{})
+	if err != nil {
+		fmt.Printf("there was an problem when deleting the pod, %s.\n%v", podName, err)
+		return fmt.Errorf("there was an problem when deleting the pod, %s.\n%v", podName, err)
+	}
 	return nil
 }

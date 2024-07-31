@@ -22,9 +22,6 @@ var sealedCmd = &cobra.Command{
 	Long: `This command will deploy Sealed Secrets as an application in ArgoCD.
 The default install will enable ingress for external connectivity. 
 
-Usage:
-  cnvrgctl install sealed [flags]
-
 Examples:
 # Install Sealed Secrets into the sealed namespace with the default values.
   cnvrgctl -n sealed install sealed

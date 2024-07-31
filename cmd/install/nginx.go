@@ -23,9 +23,6 @@ var nginxCmd = &cobra.Command{
 will use the ingress-nginx helm chart. You can also install ingress-nginx as an ArgoCD 
 application by using the --app flag. 
 
-Usage:
-  cnvrgctl install nginx [flags]
-
 Examples:
 # Install nginx into the nginx namespace with the default values.
   cnvrgctl -n nginx install nginx

@@ -11,7 +11,7 @@ import (
 )
 
 // Set the version of the cnvrgctl cli
-var Version = "v0.0.4"
+var Version = "v0.0.5"
 
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{

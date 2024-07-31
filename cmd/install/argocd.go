@@ -27,9 +27,6 @@ var argocdCmd = &cobra.Command{
 	Long: `Install the gitops tool argocd as a helm release. The deployment
 will use the default ingress controller for external access.
 
-Usage:
-  cnvrgctl install argocd [flags]
-
 Examples:
 # Install argocd into the argocd namespace with the default values.
   cnvrgctl -n argocd install argocd -n argocd

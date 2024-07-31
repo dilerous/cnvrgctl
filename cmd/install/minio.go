@@ -24,9 +24,6 @@ during the migration process. The installation by default will deploy an ingress
 to access the minio operator ui, the minio tenant api, and tenant ui. Please see examples
 below to define the domain and other configurations.
 
-Usage:
-  cnvrgctl install minio [flags]
-
 Examples:
 # Install minio tenant and operator into the minio-operator namespace with a custom domain defined.
   cnvrgctl install minio -n minio-operator -d minio-console.nginx.dilerous.cloud

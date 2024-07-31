@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -39,7 +40,9 @@ Examples:
 # Specify namespace, deployment label key, and deployment name.
   cnvrgctl restore postgres --target postgres-ha --label app.kubernetes.io/name -n cnvrg`,
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Println("postgres called")
+		log.Println("postgres command called")
+
+		svcPort := "5432"
 
 		// target deployment of the postgres backup
 		targetFlag, _ := cmd.Flags().GetString("target")
@@ -49,6 +52,12 @@ Examples:
 
 		// grab the namespace from the -n flag if not specified default is used
 		labelFlag, _ := cmd.Flags().GetString("selector")
+
+		// Define the local location to save the file
+		fileLocationFlag, _ := cmd.Flags().GetString("file-location")
+
+		// flag to define backup file name
+		fileNameFlag, _ := cmd.Flags().GetString("file-name")
 
 		// connect to the kubernetes api and set clientset and rest client
 		api, err := root.ConnectToK8s()
@@ -60,10 +69,11 @@ Examples:
 		// get the postgres pod name
 		podName, err := root.GetDeployPod(api, targetFlag, nsFlag, labelFlag)
 		if err != nil {
-			fmt.Printf("Error getting pod name: %v", err)
-			log.Printf("Error getting pod name: %v", err)
+			fmt.Printf("error getting pod name, %v", err)
+			log.Printf("error getting pod name, %v", err)
 		}
 
+		// scale down the app, operator and kiq pods
 		err = root.ScaleDeployDown(api, nsFlag)
 		if err != nil {
 			fmt.Printf("there was a problem with scaling down the pods. %v ", err)
@@ -71,21 +81,21 @@ Examples:
 		}
 
 		// copy the local sql backup to the postgres pod
-		copyDBRemotely(api, nsFlag, podName)
+		copyDBRemotely(api, nsFlag, podName, fileLocationFlag, fileNameFlag)
 		if err != nil {
 			fmt.Printf("there was a problem copying the local backup to the pod. %v ", err)
 			log.Printf("there was a problem copying the local backup to the pod. %v", err)
 		}
 
 		// forward the postgres service and execute the sql commands
-		err = portForwardSvc(api, nsFlag, podName)
+		err = portForwardSvc(api, nsFlag, podName, svcPort)
 		if err != nil {
 			fmt.Printf("error forwarding the service. %v ", err)
 			log.Printf("error forwarding the service. %v", err)
 		}
 
 		// restore the postgres backup from the dump file
-		err = restorePostgresBackup(api, nsFlag, podName)
+		err = restoreDBBackup(api, nsFlag, podName)
 		if err != nil {
 			fmt.Printf("error restoring the backup, check the logs. %v ", err)
 			log.Printf("error restoring the backup, check the logs. %v", err)
@@ -107,6 +117,12 @@ func init() {
 
 	// flag to define the app label key
 	postgresCmd.Flags().StringP("selector", "l", "app", "Define the deployment label for the postgres deployment. example: app.kubernetes.io/name")
+
+	// flag to define redis backup file name
+	postgresCmd.Flags().StringP("file-name", "", "cnvrg-db-backup.sql", "Name of the redis backup file.")
+
+	// flag to define restore location
+	postgresCmd.Flags().StringP("file-location", "f", ".", "Local location of the postgres backup file.")
 }
 
 func dropPgDB(a root.KubernetesAPI, n string, name string) error {
@@ -170,13 +186,15 @@ func connectToPostgreSQL(clientset *root.KubernetesAPI, namespace, podName strin
 	return db, nil
 }
 
-func portForwardSvc(api *root.KubernetesAPI, n string, p string) error {
+// forwards the service so the database copy can take place
+// arguments are namespace "ns", "n" name of pod and "p" for the port number of the svc
+func portForwardSvc(api *root.KubernetesAPI, ns string, n string, p string) error {
 	log.Println("portForwardSvc function called")
 
 	var (
-		namespace = n
-		podName   = p
-		localPort = 5432
+		namespace = ns
+		podName   = n
+		localPort = p
 	)
 	fmt.Println("the pod name is " + podName)
 
@@ -185,9 +203,6 @@ func portForwardSvc(api *root.KubernetesAPI, n string, p string) error {
 	readyChan := make(chan struct{})
 	errChan := make(chan error, 1)
 	go func() {
-
-		// convert the int of port to a string to pass later
-		portAsString := fmt.Sprintf("%d", localPort)
 
 		restClient := api.Client.CoreV1().RESTClient()
 		req := restClient.Post().
@@ -206,7 +221,7 @@ func portForwardSvc(api *root.KubernetesAPI, n string, p string) error {
 
 		var (
 			dialer = spdy.NewDialer(upgrader, &http.Client{Transport: roundTripper}, http.MethodPost, url)
-			port   = []string{portAsString}
+			port   = []string{localPort}
 		)
 
 		// Create the port forwarder object
@@ -227,11 +242,15 @@ func portForwardSvc(api *root.KubernetesAPI, n string, p string) error {
 	time.Sleep(5 * time.Second)
 
 	// execute the sql commands against the postgres DB
-	err := dropPgDB(*api, namespace, podName)
-	if err != nil {
-		fmt.Printf("error restoring the postgres database. %v ", err)
-		log.Printf("error restoring the postgres database. %v", err)
+	if strings.Contains(podName, "postgres") {
+		err := dropPgDB(*api, namespace, podName)
+		if err != nil {
+			fmt.Printf("error restoring the postgres database. %v ", err)
+			log.Printf("error restoring the postgres database. %v", err)
+		}
 	}
+
+	// notify user the connection is being closed
 	fmt.Println("Changes made closing the connection...")
 
 	// close the channel
@@ -252,77 +271,17 @@ func portForwardSvc(api *root.KubernetesAPI, n string, p string) error {
 	return nil
 }
 
-func restorePostgresBackup(api *root.KubernetesAPI, n string, p string) error {
-	log.Println("restorePostgresBackup function called.")
-
-	// set variables for the clientset and pod name
-	var (
-		clientset = api.Client
-		podName   = p
-		namespace = n
-	)
-
-	// this is the command passed when connecting to the pod
-	command := []string{
-		"sh",
-		"-c",
-		"export PGPASSWORD=$POSTGRESQL_PASSWORD; pg_restore -h postgres -p 5432 -U cnvrg -d cnvrg_production -j 8 --verbose cnvrg-db-backup.sql",
-	}
-
-	// rest request to send command to pod
-	req := clientset.CoreV1().RESTClient().
-		Post().
-		Resource("pods").
-		Name(podName).
-		Namespace(namespace).
-		SubResource("exec").
-		VersionedParams(&corev1.PodExecOptions{
-			Command: command,
-			Stdin:   false,
-			Stdout:  true,
-			Stderr:  true,
-			TTY:     false,
-		}, scheme.ParameterCodec)
-
-	// Execute the command in the pod
-	executor, err := remotecommand.NewSPDYExecutor(api.Config, "POST", req.URL())
-	if err != nil {
-		log.Printf("here was an error executing the commands in the pod. %v\n", err)
-		return fmt.Errorf("here was an error executing the commands in the pod. %w", err)
-	}
-
-	// Prepare the streams for stdout and stderr
-	stdout := os.Stdout
-	stderr := os.Stderr
-
-	// stream the output of the command to stdout and stderr
-	err = executor.StreamWithContext(context.Background(), remotecommand.StreamOptions{
-		Stdin:  nil,
-		Stdout: stdout,
-		Stderr: stderr,
-		Tty:    false,
-	})
-	if err != nil {
-		log.Printf("there was an error streaming the output of the command to stdout, stderr. %v\n", err)
-		return fmt.Errorf("there was an error streaming the output of the command to stdout, stderr. %w", err)
-	}
-
-	//TODO add in a check if the file exits here cnvrg-db-backup.sql
-	fmt.Println("Postgres DB Restore successful!")
-	log.Println("Postgres DB Restore successful!")
-	return nil
-}
-
 // TODO: add flags to define the backup file name and path
-func copyDBRemotely(api *root.KubernetesAPI, ns string, pod string) error {
+// takes the arguments namespace "ns" pod name "p" the file path "f" and the backup file name "n"
+func copyDBRemotely(api *root.KubernetesAPI, ns string, p string, f string, n string) error {
 	log.Println("copyDBLocally function called.")
 
 	//TODO: add flag to specify location of file
 	var ( // Set the pod and namespace
-		podName    = pod
+		podName    = p
 		namespace  = ns
-		filePath   = "./"
-		backupFile = "cnvrg-db-backup.sql"
+		filePath   = f
+		backupFile = n
 		clientset  = api.Client
 		command    = []string{"cp", "/dev/stdin", "/opt/app-root/src/cnvrg-db-backup.sql"}
 		config     = api.Config

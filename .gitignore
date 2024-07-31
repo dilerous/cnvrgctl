@@ -1,4 +1,5 @@
 logs/
+dump.rdb
 cnvrg-db-backup.sql
 cnvrgctl-logs.txt
 /bin/cnvrgctl

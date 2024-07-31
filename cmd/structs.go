@@ -41,3 +41,9 @@ type Flags struct {
 	Tls            bool
 	ClusterIssuer  string
 }
+
+type RedisSecret struct {
+	RedisPassword string
+	RedisConf     string
+	RedisUrl      string
+}

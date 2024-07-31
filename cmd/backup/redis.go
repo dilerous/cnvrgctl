@@ -1,5 +1,5 @@
 /*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 NAME HERE BRADLEY.SOPER@CNVRG.IO
 */
 package backup
 
@@ -29,6 +29,11 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Println("redis command called")
 
+		// set the redis secret to the Redis Secret struct
+		var (
+			redisStuct = root.RedisSecret{}
+		)
+
 		// grab the namespace from the -n flag if not specified default is used
 		nsFlag, _ := cmd.Flags().GetString("namespace")
 
@@ -57,8 +62,17 @@ to quickly create a Cobra application.`,
 			log.Fatalf("error connecting to the cluster, check your connectivity. %v", err)
 		}
 
+		// scale down the application pods to prepare for backups
+		if !disableScaleFlag {
+			err = root.ScaleDeployDown(api, nsFlag)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "error scaling the de ployment. %v", err)
+				log.Fatalf("error scaling the deployment. %v\n", err)
+			}
+		}
+
 		// capture the redis password
-		password, err := root.GetRedisPassword(api, redisSecretName, nsFlag)
+		password, err := root.GetRedisPassword(api, redisSecretName, nsFlag, &redisStuct)
 		if err != nil {
 			fmt.Printf("error capturing the redis password, check the namespace and secret exists. %v", err)
 			log.Printf("error capturing the redis password, check the namespace and secret exists. %v", err)
@@ -72,7 +86,7 @@ to quickly create a Cobra application.`,
 		}
 
 		// connect to the redis pod and execute the backup
-		err = executeRedisBackup(api, podName, nsFlag, password)
+		err = executeRedisBackup(api, podName, nsFlag, password.RedisPassword)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error executing the backup, check the logs. %v", err)
 			log.Fatalf("error executing the backup, check the logs. %v\n", err)
@@ -84,8 +98,8 @@ to quickly create a Cobra application.`,
 			log.Fatalf("error copying the database file. %v\n", err)
 
 		} else {
-			fmt.Printf("postgres backup %s saved to %s.\n", fileNameFlag, fileLocationFlag)
-			log.Printf("postgres backup %s saved to %s.\n", fileNameFlag, fileLocationFlag)
+			fmt.Printf("backup %s saved to '%s'\n", fileNameFlag, fileLocationFlag)
+			log.Printf("backup %s saved to '%s'\n", fileNameFlag, fileLocationFlag)
 		}
 
 		//If the backup is successful and disable-scale flag is false, scale back up the pods
@@ -120,20 +134,22 @@ func init() {
 // Executes a backup of Redis by executing the commands from within the pod
 // takes the arguments pod name "n" the namespace "ns" and the redis password "p"
 func executeRedisBackup(api *root.KubernetesAPI, n string, ns string, p string) error {
-	log.Println("executePostgresBackup function called.")
+	log.Println("executeRedisBackup function called.")
 	// set variables for the clientset and pod name
 	var (
 		clientset = api.Client
 		podName   = n
 		namespace = ns
 		password  = p
+		green     = "\033[32m"
+		reset     = "\033[0m"
 	)
 
 	// Command to save a redis backup of the database
 	command := []string{
 		"sh",
 		"-c",
-		"redis-cli -a %s save;", password,
+		fmt.Sprintf("redis-cli -a %v save", password),
 	}
 
 	// rest request to send command to pod
@@ -175,6 +191,6 @@ func executeRedisBackup(api *root.KubernetesAPI, n string, ns string, p string) 
 	}
 
 	//TODO add in a check if the file exits here cnvrg-db-backup.sql
-	fmt.Println("Redis DB Backup successful!")
+	fmt.Println(string(green), "Redis DB Backup successful!", string(reset))
 	return nil
 }
