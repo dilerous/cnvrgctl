@@ -11,7 +11,7 @@ import (
 )
 
 // Set the version of the cnvrgctl cli
-var Version = "v0.0.5"
+var Version = "v0.0.6"
 
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
@@ -39,6 +39,7 @@ func init() {
 	RootCmd.AddCommand(versionCmd)
 }
 
+// displays the current version of the cli tool
 func displayVersion(v string) {
 	fmt.Println("cnvrgctl version " + v)
 	log.Println("cnvrgctl version " + v)

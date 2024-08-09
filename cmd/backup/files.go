@@ -59,6 +59,8 @@ Examples:
 		// set the session key if defined
 		o.SessionKey, _ = cmd.Flags().GetString("session-key")
 
+		o.UseSSL = false
+
 		if o.Endpoint == "s3.amazonaws.com" {
 			o.UseSSL = true
 			listS3Bucket(o)
@@ -148,7 +150,7 @@ func init() {
 	filesCmd.Flags().StringP("bucket", "b", "cnvrg-storage", "define the bucket to restore the files from. (required if secret-key, access-key and minio-url is set)")
 
 	// flag to define the backup bucket target
-	filesCmd.Flags().StringP("bucket-url", "u", "s3.amazonaws.com", "define the url to the bucket api. (required if secret-key, access-key and bucket is set)")
+	filesCmd.Flags().StringP("bucket-url", "u", "", "define the url to the bucket api. use s3.amazonaws.com for aws S3. (required if secret-key, access-key and bucket is set)")
 
 	// flag to define the source files
 	filesCmd.Flags().StringP("source", "s", "cnvrg-storage", "define the source folder to backup files too locally.")

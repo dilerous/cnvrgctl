@@ -10,6 +10,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
 
 	root "github.com/dilerous/cnvrgctl/cmd"
 	"github.com/spf13/cobra"
@@ -97,7 +98,11 @@ func copyDBLocally(api *root.KubernetesAPI, ns string, p string, l string, f str
 	}
 
 	// set the variables to type byte and stream the output to those variables
-	var stdout, stderr bytes.Buffer
+	var (
+		stdout, stderr bytes.Buffer
+		green          = "\033[32m"
+		reset          = "\033[0m"
+	)
 
 	// execute the command
 	exec.StreamWithContext(context.Background(), remotecommand.StreamOptions{
@@ -128,6 +133,7 @@ func copyDBLocally(api *root.KubernetesAPI, ns string, p string, l string, f str
 		log.Printf("the copy failed. %v", err)
 		return false, fmt.Errorf("the copy failed. %w", err)
 	}
+	fmt.Println(string(green), "database copied successfully!", string(reset))
 
 	return true, nil
 }
@@ -145,4 +151,80 @@ func createDirectory(dirName string) error {
 		fmt.Println("directorie(s) created successfully.")
 	}
 	return nil
+}
+
+// Checks to make sure the backup exists for postgres and redis
+// takes the arguments pod name "n" the namespace "ns"
+func checkBackupExists(api *root.KubernetesAPI, n string, ns string) (bool, error) {
+	log.Println("checkBackupExists function called")
+
+	// define the pod name, namespace, password and text color variables
+	var (
+		clientset = api.Client
+		podName   = n
+		namespace = ns
+		command   = []string{}
+		stdout    = bytes.Buffer{}
+		stderr    = bytes.Buffer{}
+		green     = "\033[32m"
+		reset     = "\033[0m"
+	)
+
+	// if the pod name has postgres sets the proper restore command
+	if strings.Contains(podName, "postgres") {
+		command = []string{
+			"test",
+			"-f",
+			"/opt/app-root/src/cnvrg-db-backup.sql",
+		}
+	}
+
+	// if the pod name matches redis set the correct commands
+	if strings.Contains(podName, "redis") {
+		command = []string{
+			"test",
+			"-f",
+			"/data/dump.rdb",
+		}
+	}
+
+	// rest request to send command to pod
+	req := clientset.CoreV1().RESTClient().
+		Post().
+		Resource("pods").
+		Name(podName).
+		Namespace(namespace).
+		SubResource("exec").
+		VersionedParams(&corev1.PodExecOptions{
+			Command: command,
+			Stdin:   false,
+			Stdout:  true,
+			Stderr:  true,
+			TTY:     false,
+		}, scheme.ParameterCodec)
+
+	// Execute the command in the pod
+	executor, err := remotecommand.NewSPDYExecutor(api.Config, "POST", req.URL())
+	if err != nil {
+		log.Printf("here was an error executing the commands in the pod. %v\n", err)
+		return false, fmt.Errorf("here was an error executing the commands in the pod. %w", err)
+	}
+
+	// stream the output of the command to stdout and stderr
+	err = executor.StreamWithContext(context.Background(), remotecommand.StreamOptions{
+		Stdin:  nil,
+		Stdout: &stdout,
+		Stderr: &stderr,
+		Tty:    false,
+	})
+	if err != nil {
+		log.Printf("there was an error streaming the output of the command to stdout, stderr. %v\n", err)
+		return false, fmt.Errorf("there was an error streaming the output of the command to stdout, stderr. %w", err)
+	}
+
+	log.Println("database backup successful!")
+	fmt.Println(string(green), "database backup successful!", string(reset))
+
+	return true, nil
+	//return stdout.Len() == 0 && stderr.Len() == 0, nil
 }

@@ -32,6 +32,7 @@ to quickly create a Cobra application.`,
 		// set the redis secret to the Redis Secret struct
 		var (
 			redisStuct = root.RedisSecret{}
+			result     bool
 		)
 
 		// grab the namespace from the -n flag if not specified default is used
@@ -92,14 +93,24 @@ to quickly create a Cobra application.`,
 			log.Fatalf("error executing the backup, check the logs. %v\n", err)
 		}
 
-		result, err := copyDBLocally(api, nsFlag, podName, fileLocationFlag, fileNameFlag)
+		// check if the backup file exists in the pod
+		exists, err := checkBackupExists(api, podName, nsFlag)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error copying the database file. %v", err)
 			log.Fatalf("error copying the database file. %v\n", err)
+		}
 
-		} else {
-			fmt.Printf("backup %s saved to '%s'\n", fileNameFlag, fileLocationFlag)
-			log.Printf("backup %s saved to '%s'\n", fileNameFlag, fileLocationFlag)
+		// if the file exists in the pod copy the file locally
+		if exists {
+			result, err = copyDBLocally(api, nsFlag, podName, fileLocationFlag, fileNameFlag)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "error copying the database file. %v", err)
+				log.Fatalf("error copying the database file. %v\n", err)
+
+			} else {
+				fmt.Printf("backup %s saved to '%s'\n", fileNameFlag, fileLocationFlag)
+				log.Printf("backup %s saved to '%s'\n", fileNameFlag, fileLocationFlag)
+			}
 		}
 
 		//If the backup is successful and disable-scale flag is false, scale back up the pods
@@ -141,8 +152,6 @@ func executeRedisBackup(api *root.KubernetesAPI, n string, ns string, p string) 
 		podName   = n
 		namespace = ns
 		password  = p
-		green     = "\033[32m"
-		reset     = "\033[0m"
 	)
 
 	// Command to save a redis backup of the database
@@ -190,7 +199,5 @@ func executeRedisBackup(api *root.KubernetesAPI, n string, ns string, p string) 
 		return fmt.Errorf("there was an error streaming the output of the command to stdout, stderr. %w", err)
 	}
 
-	//TODO add in a check if the file exits here cnvrg-db-backup.sql
-	fmt.Println(string(green), "Redis DB Backup successful!", string(reset))
 	return nil
 }

@@ -5,11 +5,91 @@ import (
 	"encoding/base64"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	restapi "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
+
+func ConnectToK8s() (*KubernetesAPI, error) {
+
+	// Create Kubernetes client variable from the struct KubernetesAPI
+	api := KubernetesAPI{}
+
+	kubeContextFlag, err := RootCmd.Flags().GetString("context")
+	if err != nil {
+		return nil, fmt.Errorf("error reading the kubeconfig context. %w", err)
+	}
+
+	kubeConfigFlag, err := RootCmd.Flags().GetString("kubeconfig")
+	if err != nil {
+		return nil, fmt.Errorf("error getting the kubeconfig path. %w", err)
+	}
+
+	// defining the rest api client used in creating argocd applications
+	api.Rest, err = restapi.New(config.GetConfigOrDie(), restapi.Options{})
+	if err != nil {
+		return nil, fmt.Errorf("error getting the kubeconfig path. %w", err)
+	}
+
+	// If KUBECONFIG is not set, use default path
+	//TODO look at making this a case statement
+	envKubeConfig := os.Getenv("KUBECONFIG")
+	kubeconfig := kubeConfigFlag
+
+	if kubeConfigFlag == "" {
+		kubeconfig = envKubeConfig
+		if kubeconfig == "" {
+			kubeconfig = homeDir() + "/.kube/config"
+		}
+	}
+
+	// Use the current context in kubeconfig
+	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+	api.Config = config
+
+	if err != nil {
+		// If building config fails, try in-cluster config
+		config, err = rest.InClusterConfig()
+		if err != nil {
+			return nil, fmt.Errorf("error building the kubeconfig. %w", err)
+		}
+	}
+
+	// Use context inputed by context flag
+	if kubeConfigFlag != "" {
+		config, err = buildConfigWithContextFromFlags(kubeContextFlag, kubeconfig)
+		if err != nil {
+			return nil, fmt.Errorf("the context doesn't exists. %w", err)
+		}
+	}
+
+	api.Client, err = kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, fmt.Errorf("error creating kubernetes client, exiting. %w", err)
+	}
+
+	// create the dynamic client
+	//TODO understand why this is created
+	api.Dynamic = *dynamic.NewForConfigOrDie(config)
+
+	return &api, nil
+}
+
+// Gets the home env variable for linux/windows
+func homeDir() string {
+	if h := os.Getenv("HOME"); h != "" {
+		return h
+	}
+	return os.Getenv("USERPROFILE") // Windows
+}
 
 // grabs the secret, key and endpoint from the cp-object-secret
 func GetObjectSecret(api *KubernetesAPI, name string, namespace string) (*ObjectStorage, error) {

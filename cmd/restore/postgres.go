@@ -157,6 +157,7 @@ func dropPgDB(a root.KubernetesAPI, n string, name string) error {
 			log.Fatalf("error executing SQL command: %v", err)
 		}
 	}
+	log.Printf("SQL commands executed successfully.")
 	fmt.Println("SQL commands executed successfully.")
 	return nil
 }
@@ -288,7 +289,7 @@ func copyDBRemotely(api *root.KubernetesAPI, ns string, p string, f string, n st
 	)
 
 	// open the file that was just created
-	file, err := os.Open(filePath + backupFile)
+	file, err := os.Open(filePath + "/" + backupFile)
 	if err != nil {
 		log.Printf("opening the file failed. %s\n", err)
 		return fmt.Errorf("opening the file failed. %w", err)

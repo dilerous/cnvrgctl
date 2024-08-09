@@ -82,15 +82,24 @@ Examples:
 			log.Fatalf("error executing the backup, check the logs. %v\n", err)
 		}
 
-		// copy the postgres backup to the local machine
-		result, err = copyDBLocally(api, nsFlag, podName, fileLocationFlag, fileNameFlag)
+		// check if the backup file exists in the pod
+		exists, err := checkBackupExists(api, podName, nsFlag)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "error copying the database file. %v", err)
+			fmt.Fprintf(os.Stderr, " error copying the database file. %v", err)
 			log.Fatalf("error copying the database file. %v\n", err)
-		} else {
-			fmt.Printf("backup %s saved to '%s'\n", fileNameFlag, fileLocationFlag)
-			log.Printf("backup %s saved to '%s'\n", fileNameFlag, fileLocationFlag)
+		}
 
+		// if the file exists in the pod copy the file locally
+		if exists {
+			result, err = copyDBLocally(api, nsFlag, podName, fileLocationFlag, fileNameFlag)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "error copying the database file. %v", err)
+				log.Fatalf("error copying the database file. %v\n", err)
+
+			} else {
+				fmt.Printf("backup %s saved to '%s'\n", fileNameFlag, fileLocationFlag)
+				log.Printf("backup %s saved to '%s'\n", fileNameFlag, fileLocationFlag)
+			}
 		}
 
 		//If the backup is successful and disable-scale flag is false, scale back up the pods
@@ -176,7 +185,6 @@ func executePostgresBackup(api *root.KubernetesAPI, pod string, nsFlag string) e
 		return fmt.Errorf("there was an error streaming the output of the command to stdout, stderr. %w", err)
 	}
 
-	//TODO add in a check if the file exits here cnvrg-db-backup.sql
-	fmt.Println("Postgres DB Backup successful!")
+	//fmt.Println(string(green), "Postgres DB copied successful!", string(reset))
 	return nil
 }
